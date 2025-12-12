@@ -1,0 +1,33 @@
+<h1>Create Manual ID</h1>
+
+{% if success %}
+    <p style="color: green; font-weight: bold;">{{ success }}</p>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Name</label>
+    <input type="text" name="name" required><br>
+
+    <label>Email</label>
+    <input type="email" name="email" required><br>
+
+    <label>Phone</label>
+    <input type="text" name="phone" required><br>
+
+    <label>State</label>
+    <input type="text" name="state" required><br>
+
+    <label>Sponsor Code</label>
+    <input type="text" name="sponsor"><br>
+
+    <label>Package</label>
+    <select name="package" required>
+        {% for p in packages %}
+            <option value="{{ p }}">{{ p }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Create ID</button>
+</form>

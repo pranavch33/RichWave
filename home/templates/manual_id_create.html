@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual ID Creation</title>
+</head>
+<body>
+
+<h2>Create ID (Admin Only)</h2>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+{% if success %}
+<p style="color:green; font-size:18px; font-weight:bold;">{{ success }}</p>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Name</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Email (Login ID)</label><br>
+    <input type="email" name="email" required><br><br>
+
+    <label>Phone</label><br>
+    <input type="text" name="phone" required><br><br>
+
+    <label>State</label><br>
+    <input type="text" name="state" required><br><br>
+
+    <label>Sponsor Code</label><br>
+    <input type="text" name="sponsor_code"><br><br>
+
+    <label>Package Name</label><br>
+    <input type="text" name="package_name" required><br><br>
+
+    <button type="submit">Create ID</button>
+</form>
+
+</body>
+</html>

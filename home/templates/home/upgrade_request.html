@@ -1,0 +1,152 @@
+<!-- file: templates/home/upgrade_request.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Upgrade Requests | ThriveOn</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Inter',sans-serif;margin:0;background:#f5f7ff}
+  .wrap{width:95%;margin:20px auto}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .title{font-weight:700;font-size:22px;color:#222}
+  .wallet{background:linear-gradient(90deg,#4b6bff,#7b8cff);color:#fff;padding:10px 16px;border-radius:10px;font-weight:700}
+  .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.06)}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th{background:#2d2d3a;color:#fff;padding:12px;font-size:13px;text-transform:uppercase}
+  td{padding:12px;border-bottom:1px solid #eee;color:#333;font-size:14px}
+  .badge{padding:6px 10px;border-radius:8px;font-weight:700;font-size:12px}
+  .pending{background:#fff3b0;color:#8a7200}
+  .success{background:#c8ffd6;color:#006d16}
+  .failed{background:#ffc6c6;color:#9b0000}
+  .btn{padding:8px 12px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
+  .btn-approve{background:#28a745;color:#fff}
+  .btn-reject{background:#d62839;color:#fff}
+  .actions{display:flex;gap:8px}
+  .no-data{text-align:center;padding:40px;color:#777;font-size:18px}
+  .search-row{display:flex;gap:8px;align-items:center}
+  .search-input{padding:8px;border-radius:8px;border:1px solid #ddd}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="title">Upgrade Requests</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="wallet">Your Wallet Balance: ₹{{ wallet_balance }}</div>
+      <!-- create form can be modal; quick button (optional) -->
+      <form method="post" action="{% url 'home:upgrade_request_create' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn" style="background:#4b6bff;color:#fff;border-radius:8px">+ Create New ID</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="search-row">
+        <form method="get" style="display:flex;gap:8px;align-items:center">
+          <input class="search-input" type="text" name="q" placeholder="Search name / email / phone" value="{{ q }}">
+          <select name="status" class="search-input">
+            <option value="">All</option>
+            <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="success" {% if status == 'success' %}selected{% endif %}>Success</option>
+            <option value="failed" {% if status == 'failed' %}selected{% endif %}>Failed</option>
+          </select>
+          <button class="btn" style="background:#2d2d3a;color:#fff">Filter</button>
+        </form>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr id="row-{{ r.id }}">
+          <td>{{ r.id }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.email }}</td>
+          <td>{{ r.phone }}</td>
+          <td>{{ r.plan }}</td>
+          <td>₹{{ r.amount }}</td>
+          <td>{{ r.created_at|date:"Y-m-d H:i" }}</td>
+          <td>
+            <span id="status-{{ r.id }}" class="badge {% if r.status == 'pending' %}pending{% elif r.status == 'success' %}success{% else %}failed{% endif %}">{{ r.status }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-approve" onclick="doApprove({{ r.id }})">Approve</button>
+              <button class="btn btn-reject" onclick="doReject({{ r.id }})">Reject</button>
+              <button class="btn" onclick="viewDetail({{ r.id }})" style="background:#6c757d;color:#fff">View</button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="no-data">Nothing Found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i=0;i<cookies.length;i++){
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length+1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length+1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+function doApprove(id){
+  fetch(`/upgrade-request/${id}/approve/`, {
+    method: "POST",
+    headers: {"X-CSRFToken": csrftoken, "Accept": "application/json"},
+  }).then(r=>r.json()).then(data=>{
+    if(data.ok){
+      const s = document.getElementById(`status-${id}`);
+      s.textContent = data.status;
+      s.className = 'badge success';
+    } else alert("Error");
+  }).catch(e=>alert("Network error"));
+}
+
+function doReject(id){
+  fetch(`/upgrade-request/${id}/reject/`, {
+    method: "POST",
+    headers: {"X-CSRFToken": csrftoken, "Accept": "application/json"},
+  }).then(r=>r.json()).then(data=>{
+    if(data.ok){
+      const s = document.getElementById(`status-${id}`);
+      s.textContent = data.status;
+      s.className = 'badge failed';
+    } else alert("Error");
+  }).catch(e=>alert("Network error"));
+}
+
+function viewDetail(id){
+  fetch(`/upgrade-request/${id}/`).then(r=>r.json()).then(data=>{
+    alert(
+      "Name: "+data.name + "\nEmail: "+data.email + "\nPhone: "+data.phone + "\nPlan: "+data.plan + "\nAmount: ₹"+data.amount + "\nStatus: "+data.status
+    );
+  }).catch(e=>alert("Network error"));
+}
+</script>
+
+</body>
+</html>

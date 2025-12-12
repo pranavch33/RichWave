@@ -1,0 +1,193 @@
+{% extends "home/registation_requests.html" %}
+{% load static %}
+{% block title %}Registration Requests - ThriveOn{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container my-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Registration Requests</h3>
+
+    <form action="{% url 'home:registration_request_create_dummy' %}" method="post">
+      {% csrf_token %}
+      <button class="btn btn-primary">+ Create New ID</button>
+    </form>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+
+      <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search name / email / phone">
+        </div>
+
+        <div class="col-md-3">
+          <select name="status" class="form-select">
+            <option value="">All Status</option>
+            <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="success" {% if status == 'success' %}selected{% endif %}>Success</option>
+            <option value="failed" {% if status == 'failed' %}selected{% endif %}>Failed</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <button class="btn btn-secondary w-100">Filter</button>
+        </div>
+
+        <div class="col-md-3 text-end">
+          <span class="text-muted">Total: {{ requests_page.paginator.count }}</span>
+        </div>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>State</th>
+              <th>Plan</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for r in requests_page %}
+            <tr>
+              <td>{{ r.id }}</td>
+              <td>{{ r.name }}</td>
+              <td>{{ r.email }}</td>
+              <td>{{ r.phone }}</td>
+              <td>{{ r.state }}</td>
+              <td>{{ r.plan }}</td>
+              <td>₹ {{ r.amount }}</td>
+
+              <td>
+                {% if r.status == 'pending' %}
+                  <span class="badge bg-warning text-dark">Pending</span>
+                {% elif r.status == 'success' %}
+                  <span class="badge bg-success">Success</span>
+                {% else %}
+                  <span class="badge bg-danger">Failed</span>
+                {% endif %}
+              </td>
+
+              <td>{{ r.created_at|date:"Y-m-d H:i" }}</td>
+
+              <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="openDetail({{ r.id }})">
+                  View
+                </button>
+              </td>
+            </tr>
+
+            {% empty %}
+            <tr>
+              <td colspan="10" class="text-center py-4 text-muted">No data found.</td>
+            </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+
+          {% if requests_page.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ requests_page.previous_page_number }}&q={{ q }}&status={{ status }}">Previous</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+
+          {% for p in requests_page.paginator.page_range %}
+            <li class="page-item {% if requests_page.number == p %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&q={{ q }}&status={{ status }}">{{ p }}</a>
+            </li>
+          {% endfor %}
+
+          {% if requests_page.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ requests_page.next_page_number }}&q={{ q }}&status={{ status }}">Next</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+
+        </ul>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Registration Details</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" id="detailBody">
+        <div class="text-center py-4">
+          <div class="spinner-border"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <a id="adminEdit" href="#" class="btn btn-outline-secondary">Open Admin</a>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function openDetail(id) {
+  const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="text-center py-4">
+      <div class="spinner-border"></div>
+    </div>
+  `;
+
+  fetch(`/registration-request/${id}/`, {
+    headers: { "X-Requested-With": "XMLHttpRequest" }
+  })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('detailBody').innerHTML = `
+        <div class="row g-3">
+          <div class="col-md-6"><strong>Name:</strong> ${data.name}</div>
+          <div class="col-md-6"><strong>Phone:</strong> ${data.phone || '-'}</div>
+          <div class="col-md-6"><strong>Email:</strong> ${data.email || '-'}</div>
+          <div class="col-md-6"><strong>State:</strong> ${data.state || '-'}</div>
+          <div class="col-md-6"><strong>Plan:</strong> ${data.plan || '-'}</div>
+          <div class="col-md-6"><strong>Amount:</strong> ₹ ${data.amount}</div>
+          <div class="col-md-6"><strong>Status:</strong> ${data.status}</div>
+          <div class="col-12"><strong>Notes:</strong><br>${data.notes || '-'}</div>
+          <div class="col-12 text-muted"><small>Created: ${data.created_at}</small></div>
+        </div>
+      `;
+
+      document.getElementById('adminEdit').href =
+        `/admin/home/registrationrequest/${id}/change/`;
+    });
+
+  modal.show();
+}
+</script>
+
+{% endblock %}

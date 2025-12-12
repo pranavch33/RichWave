@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>KYC Saved | ThriveOn</title>
+
+    <style>
+        body {
+            background: #f6f9ff;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .container {
+            width: 92%;
+            margin: 40px auto;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff4b4b;
+            padding-left: 12px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: rgba(0, 0, 0, 0.07) 0px 4px 20px;
+            transition: 0.2s ease;
+        }
+
+        .success-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00aaff, #0066ff);
+            border-radius: 12px;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .msg-title {
+            font-size: 22px;
+            color: #111;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .msg-sub {
+            margin: 4px 0 0 0;
+            color: #555;
+        }
+
+        .details {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f0f4ff;
+        }
+
+        .detail-row {
+            margin: 8px 0;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 22px;
+            background: #0066ff;
+            color: #fff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="title">KYC Status</div>
+
+        <div class="card">
+
+            <div class="success-box">
+                <div class="icon">✓</div>
+                <div>
+                    <div class="msg-title">KYC Submitted Successfully</div>
+                    <div class="msg-sub">Your details are saved. Verification will be completed soon.</div>
+                </div>
+            </div>
+
+            {% if saved %}
+            <div class="details">
+                <div class="detail-row"><b>Holder Name:</b> {{ saved.holder_name }}</div>
+                <div class="detail-row"><b>Account Number:</b> {{ saved.account_number }}</div>
+                <div class="detail-row"><b>Bank Name:</b> {{ saved.bank_name }}</div>
+                <div class="detail-row"><b>IFSC Code:</b> {{ saved.ifsc_code }}</div>
+                <div class="detail-row"><b>UPI:</b> {{ saved.upi_id }}</div>
+                <br>
+                <div style="font-size:13px;color:#777;"><b>Saved On:</b> {{ saved.created_at }}</div>
+            </div>
+            {% else %}
+            <div class="details">
+                <div class="detail-row">Your KYC details have been successfully saved.</div>
+                <div class="detail-row">We will update your KYC status within 24 hours.</div>
+            </div>
+            {% endif %}
+
+            <a class="btn" href="{% url 'affiliate_dashboard' %}">Back to Dashboard</a>
+
+        </div>
+    </div>
+</body>
+
+</html>

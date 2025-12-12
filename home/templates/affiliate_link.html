@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Affiliate Links – ThriveOn</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f7fb;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+            border-left: 5px solid #ff4d4d;
+            padding-left: 12px;
+            margin-bottom: 25px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #ddd;
+            font-size: 15px;
+        }
+
+        input:focus {
+            background: white;
+            border-color: #4a8cff;
+            outline: none;
+            box-shadow: 0 0 6px rgba(74,140,255,0.4);
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            background: #f8fafc;
+            font-size: 15px;
+        }
+
+        .btn {
+            background: #ff5722;
+            padding: 12px 22px;
+            color: white;
+            font-size: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #e64a19;
+        }
+    </style>
+
+    <script>
+        function copyText(id) {
+            let copyData = document.getElementById(id);
+            copyData.select();
+            navigator.clipboard.writeText(copyData.value);
+            alert("Copied!");
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <div class="title">Affiliate Links</div>
+
+        <div class="row">
+            <div>
+                <label>My Referral Link</label>
+                <input type="text" id="refLink" value="{{ referral_link }}" readonly>
+            </div>
+
+            <div style="display:flex;align-items:center;">
+                <button class="btn" onclick="copyText('refLink')">Copy Link</button>
+            </div>
+
+            <div>
+                <label>My Referral Code</label>
+                <input type="text" id="refCode" value="{{ profile.referral_code }}" readonly>
+            </div>
+
+            <div style="display:flex;align-items:center;">
+                <button class="btn" onclick="copyText('refCode')">Copy Code</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3 style="margin-top:20px;">Generate Link For</h3>
+
+        <form method="GET">
+            <div class="row">
+                <select name="package">
+                    <option value="">Select Package</option>
+                    {% for p in packages %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <button class="btn" type="submit">Generate</button>
+            </div>
+        </form>
+
+        {% if package_link %}
+        <div class="row">
+            <div>
+                <label>Generated Package Link</label>
+                <input type="text" id="pkgLink" value="{{ package_link }}" readonly>
+            </div>
+
+            <div style="display:flex;align-items:center;">
+                <button class="btn" onclick="copyText('pkgLink')">Copy Link</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

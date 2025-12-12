@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ThriveOn – Affiliate Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Optional Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-soft: #e5e7eb;
+            --radius-lg: 22px;
+            --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.08);
+
+            /* Gradients for stat cards */
+            --grad-blue: linear-gradient(135deg, #2563eb, #38bdf8);
+            --grad-purple: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            --grad-pink: linear-gradient(135deg, #ec4899, #fb7185);
+            --grad-teal: linear-gradient(135deg, #14b8a6, #22c55e);
+            --grad-gold: linear-gradient(135deg, #facc15, #f97316);
+
+            /* Wallet gradient */
+            --grad-wallet: radial-gradient(circle at 0% 0%, #4f46e5, #1d4ed8 40%, #020617 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-main);
+        }
+
+        .page {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        /* TOP HEADER BAND  */
+
+        .top-banner {
+            position: relative;
+            border-radius: 26px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            background: radial-gradient(circle at 0% 0%, #f97316 0, #facc15 18%, #f97316 30%, #ef4444 55%, #ec4899 100%);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .top-banner::before {
+            content: "";
+            position: absolute;
+            inset: -40px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(255,255,255,0.35) 0, transparent 55%),
+                radial-gradient(circle at 80% 0%, rgba(255,255,255,0.22) 0, transparent 60%);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .top-banner-inner {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            z-index: 1;
+        }
+
+        .profile-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 999px;
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #e5e7eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 26px;
+            color: #1f2937;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
+        }
+
+        .user-meta {
+            color: #f9fafb;
+        }
+
+        .user-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .user-sub {
+            margin-top: 4px;
+            font-size: 13px;
+            opacity: 0.92;
+        }
+
+        .user-sub span {
+            opacity: 0.9;
+        }
+
+        .elite-pill {
+            align-self: flex-start;
+            padding: 7px 16px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.14);
+            color: #f9fafb;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(249, 250, 251, 0.4);
+            backdrop-filter: blur(14px);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        /* STATS ROW */
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            border-radius: var(--radius-lg);
+            padding: 16px 16px 14px;
+            background: var(--card-bg);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            opacity: 0.09;
+            background: radial-gradient(circle at 0 0, #fff 0, transparent 50%);
+        }
+
+        .stat-chip {
+            width: 36px;
+            height: 36px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 12px 22px rgba(15,23,42,0.35);
+            margin-bottom: 10px;
+        }
+
+        .stat-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .stat-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.9;
+        }
+
+        /* COLORS FOR EACH CARD */
+
+        .stat-today .stat-chip {
+            background: var(--grad-blue);
+        }
+
+        .stat-week .stat-chip {
+            background: var(--grad-purple);
+        }
+
+        .stat-month .stat-chip {
+            background: var(--grad-pink);
+        }
+
+        .stat-alltime .stat-chip {
+            background: var(--grad-teal);
+        }
+
+        .stat-passive .stat-chip {
+            background: var(--grad-gold);
+        }
+
+        .stat-today .stat-value { color: #0f172a; }
+        .stat-week .stat-value { color: #4c1d95; }
+        .stat-month .stat-value { color: #9f1239; }
+        .stat-alltime .stat-value { color: #065f46; }
+        .stat-passive .stat-value { color: #92400e; }
+
+        /* LOWER GRID: CHART + WALLET */
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .card {
+            border-radius: var(--radius-lg);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-soft);
+            padding: 18px 18px 18px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Fake chart */
+
+        .chart-shell {
+            height: 230px;
+            border-radius: 18px;
+            padding: 14px 14px 10px;
+            background: radial-gradient(circle at 0% 0%, #e5f0ff, #dbeafe 30%, #eff6ff 100%);
+            border: 1px solid #bfdbfe;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-grid-lines {
+            position: absolute;
+            inset: 18px 16px 20px;
+            background-image: linear-gradient(to right, rgba(148,163,184,0.28) 1px, transparent 1px),
+                              linear-gradient(to top, rgba(148,163,184,0.28) 1px, transparent 1px);
+            background-size: 60px 100%, 100% 46px;
+            opacity: 0.5;
+        }
+
+        .chart-line {
+            position: absolute;
+            inset: 40px 20px 30px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.9), rgba(139,92,246,0.95));
+            clip-path: polygon(0% 65%, 15% 60%, 30% 62%, 45% 54%, 60% 56%, 75% 50%, 90% 48%, 100% 46%, 100% 100%, 0 100%);
+            border-radius: 18px;
+            opacity: 0.9;
+        }
+
+        .chart-axis-labels {
+            position: absolute;
+            left: 22px;
+            right: 22px;
+            bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Wallet card */
+
+        .wallet-card {
+            border-radius: 24px;
+            padding: 16px 18px;
+            background: var(--grad-wallet);
+            color: #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-card::before {
+            content: "";
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 100%;
+            background: radial-gradient(circle, rgba(167, 243, 208, 0.12), transparent 65%);
+            top: -120px;
+            right: -90px;
+        }
+
+        .wallet-row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .wallet-label {
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .wallet-brand {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .wallet-chip {
+            width: 40px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #fde68a, #f59e0b);
+            box-shadow: 0 10px 25px rgba(15,23,42,0.5);
+        }
+
+        .wallet-amount-label {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .wallet-amount-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 4px 0 10px;
+        }
+
+        .wallet-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 11px;
+            opacity: 0.88;
+        }
+
+        .wallet-name {
+            font-weight: 500;
+        }
+
+        .wallet-status {
+            padding: 4px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            font-size: 10px;
+        }
+
+        /* Responsive tweaks */
+
+        @media (max-width: 1100px) {
+            .stats-row {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .top-banner-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding: 18px 14px 32px;
+            }
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="page">
+
+    <!-- TOP PROFILE / HEADER BAND -->
+    <section class="top-banner">
+        <div class="top-banner-inner">
+            <div class="profile-block">
+                <div class="avatar">PC</div>
+                <div class="user-meta">
+                    <div class="user-name">Chavan Pranav</div>
+                    <div class="user-sub">
+                        User ID: <span>TVN000001</span> ·
+                        Joined: <span>2025 · ThriveOn Affiliate Partner</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="elite-pill">
+                ELITE PARTNER
+            </div>
+        </div>
+    </section>
+
+    <!-- REVENUE / STATS CARDS -->
+    <section class="stats-row">
+
+        <!-- Today's Revenue -->
+        <div class="stat-card stat-today">
+            <div class="stat-chip">
+                ₹
+            </div>
+            <div class="stat-title">Today's Revenue</div>
+            <div class="stat-value">₹0</div>
+            <div class="stat-note">New day – 0 sales</div>
+        </div>
+
+        <!-- Last 7 Days -->
+        <div class="stat-card stat-week">
+            <div class="stat-chip">
+                7
+            </div>
+            <div class="stat-title">Last 7 Days Revenue</div>
+            <div class="stat-value">₹0</div>
+            <div class="stat-note">Keep sharing your link</div>
+        </div>
+
+        <!-- Last 30 Days -->
+        <div class="stat-card stat-month">
+            <div class="stat-chip">
+                30
+            </div>
+            <div class="stat-title">Last 30 Days Revenue</div>
+            <div class="stat-value">₹0</div>
+            <div class="stat-note">Consistent efforts = results</div>
+        </div>
+
+        <!-- All Time Revenue -->
+        <div class="stat-card stat-alltime">
+            <div class="stat-chip">
+                ★
+            </div>
+            <div class="stat-title">All Time Revenue</div>
+            <div class="stat-value">₹0</div>
+            <div class="stat-note">Your long-term affiliate growth</div>
+        </div>
+
+        <!-- Passive Income -->
+        <div class="stat-card stat-passive">
+            <div class="stat-chip">
+                ♟
+            </div>
+            <div class="stat-title">Passive Income</div>
+            <div class="stat-value">₹0</div>
+            <div class="stat-note">Team-based earnings (coming soon)</div>
+        </div>
+
+    </section>
+
+    <!-- SALES CHART + WALLET -->
+    <section class="bottom-grid">
+
+        <!-- Sales Chart Card -->
+        <div class="card">
+            <div class="card-title">Sales – Last 7 Days</div>
+            <div class="card-subtitle">No sales yet. Keep sharing your ThriveOn link to see this chart grow.</div>
+
+            <div class="chart-shell">
+                <div class="chart-grid-lines"></div>
+                <div class="chart-line"></div>
+                <div class="chart-axis-labels">
+                    <span>Mon</span><span>Tue</span><span>Wed</span>
+                    <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Amount Card -->
+        <div class="card">
+            <div class="wallet-card">
+                <div class="wallet-row-top">
+                    <div>
+                        <div class="wallet-label">WALLET AMOUNT</div>
+                        <div class="wallet-brand">ThriveOn Earnings Card</div>
+                    </div>
+                    <div class="wallet-chip"></div>
+                </div>
+
+                <div class="wallet-amount-label">Earned Amount</div>
+                <div class="wallet-amount-value">₹{{ withdrawable }}</div>
+                <div class="wallet-footer">
+                    <div class="wallet-name">Account Holder: Chavan Pranav</div>
+                    <div class="wallet-status">Withdrawals open after first ₹500 commission</div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</div>
+</body>
+</html>

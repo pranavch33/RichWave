@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pay for {{ package_name|title }} – ThriveOn</title>
+</head>
+<body>
+  <h2>Pay for package: {{ package_name|title }}</h2>
+  <p>Amount: ₹{{ amount }}</p>
+
+  <h3>Step 1 – UPI Payment</h3>
+  <p>Pay this amount to UPI ID: <strong>{{ upi_id }}</strong></p>
+
+  <h3>Step 2 – Enter your details</h3>
+  <form method="post">
+    {% csrf_token %}
+    <label>Name:</label><br>
+    <input type="text" name="buyer_name" required><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" name="buyer_email" required><br><br>
+
+    <label>Phone:</label><br>
+    <input type="text" name="buyer_phone" required><br><br>
+
+    <label>Referral Code (optional):</label><br>
+    <input type="text" name="referral_code"><br><br>
+
+    <button type="submit">I have paid the amount</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!-- file: templates/home/my_associate.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My Associate | ThriveOn</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Inter',sans-serif;margin:0;background:#f6f8ff}
+  .wrap{width:95%;margin:20px auto}
+  .title{font-size:22px;font-weight:700;color:#222;margin-bottom:12px}
+  .card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(20,30,60,.06)}
+  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .search-box{display:flex;gap:8px}
+  .input, select{padding:8px 10px;border-radius:8px;border:1px solid #e6e9f2;min-width:180px}
+  .btn{padding:9px 14px;border-radius:8px;border:none;background:#2d2d3a;color:#fff;font-weight:700;cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th{background:#2d2d3a;color:#fff;padding:12px;font-size:13px;text-transform:uppercase}
+  td{padding:12px;border-bottom:1px solid #f1f3fa;color:#333}
+  .avatar{width:36px;height:36px;border-radius:999px;display:inline-block;vertical-align:middle;background:#e6eefc;text-align:center;line-height:36px;font-weight:700;color:#2d6bff}
+  .no-data{text-align:center;padding:36px;color:#8a8fa8}
+  .actions{display:flex;gap:8px}
+  .pill{padding:6px 10px;border-radius:999px;background:#f2f6ff;color:#2d6bff;font-weight:700}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">My Associate</div>
+
+    <div class="top-row">
+      <div class="card" style="display:flex;gap:12px;align-items:center">
+        <div style="font-weight:700">Total Associates</div>
+        <div class="pill">{{ associates.count }}</div>
+      </div>
+
+      <form method="get" class="search-box">
+        <input name="q" value="{{ q }}" class="input" placeholder="Search name, email or phone">
+        <input name="course" value="{{ course }}" class="input" placeholder="Filter by course">
+        <button class="btn">Search</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Referrals</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Course Name</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in associates %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td style="text-align:center"><div class="avatar">{{ a.name|first|upper }}</div></td>
+            <td>{{ a.name }}</td>
+            <td>{{ a.phone }}</td>
+            <td>{{ a.email }}</td>
+            <td>{{ a.course_name }}</td>
+            <td>{{ a.joined_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              <div class="actions">
+                <form method="post" action="#" style="display:inline">{% csrf_token %}
+                  <!-- future action buttons -->
+                  <button class="btn" disabled style="opacity:0.9">View</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="no-data">No associates found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

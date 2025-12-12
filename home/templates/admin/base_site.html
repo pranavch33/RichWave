@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+
+{% block sidebar %}
+    {{ block.super }}
+    <div style="padding:10px;">
+        <a href="{{ manual_id_link }}" style="color:white; background:#2a9d8f; padding:8px 12px; display:block; margin-top:10px;">
+            ➕ Manual ID Creation
+        </a>
+    </div>
+{% endblock %}

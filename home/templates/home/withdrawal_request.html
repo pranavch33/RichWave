@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Withdrawal Request | ThriveOn</title>
+
+<style>
+
+body{
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6fa;
+}
+
+/* Container */
+.container{
+    width: 90%;
+    margin: auto;
+    padding-top: 30px;
+}
+
+/* Heading */
+.title{
+    font-size: 28px;
+    font-weight: 600;
+    color: #1b255e;
+    margin-bottom: 20px;
+}
+
+/* Add Request Button */
+.add-btn{
+    background: #e63946;
+    padding: 10px 18px;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    float: right;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Table Style */
+.table-box{
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0px 5px 18px rgba(0,0,0,0.15);
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th{
+    padding: 12px;
+    background: #1b255e;
+    color: white;
+    font-size: 14px;
+    text-align: left;
+}
+
+td{
+    padding: 12px;
+    font-size: 13px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+/* POPUP BG */
+.popup-bg{
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* POPUP BOX */
+.popup-box{
+    width: 420px;
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
+}
+
+/* Popup Title */
+.popup-title{
+    font-size: 22px;
+    font-weight: 600;
+    color: #1b255e;
+    margin-bottom: 10px;
+}
+
+/* Input field */
+.input{
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+/* Submit button */
+.submit-btn{
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    background: #1b255e;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Close button */
+.close-btn{
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    background: #e63946;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Wallet text */
+.balance-text{
+    font-size: 14px;
+    color: #0077cc;
+    margin-bottom: 10px;
+}
+</style>
+
+
+<script>
+function openPopup(){
+    document.getElementById("popupForm").style.display = "flex";
+}
+function closePopup(){
+    document.getElementById("popupForm").style.display = "none";
+}
+</script>
+
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="title">Withdrawal Transactions</h2>
+
+    <button onclick="openPopup()" class="add-btn">
+        + Withdrawal Request
+    </button>
+
+    <br><br>
+
+    <!-- Alerts -->
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color:{% if message.tags == 'error' %}red{% else %}green{% endif %};
+               font-weight:600;">
+               {{ message }}
+            </p>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-box">
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+
+            {% for w in requests_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>₹ {{ w.amount }}</td>
+                <td style="font-weight:600;">
+                    {% if w.status == "pending" %}
+                       <span style="color:#e67e22;">Pending</span>
+
+                    {% elif w.status == "approved" %}
+                       <span style="color:green;">Approved</span>
+
+                    {% elif w.status == "rejected" %}
+                       <span style="color:red;">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>{{ w.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center; padding:20px;">
+                    No Withdrawal Requests Found
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+
+
+<!-- POPUP FORM -->
+<div class="popup-bg" id="popupForm">
+    <div class="popup-box">
+
+        <div class="popup-title">Withdrawal Request</div>
+
+        <div class="balance-text">Available Balance: ₹ {{ wallet_balance }}</div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="number" name="amount" class="input" placeholder="Enter Amount" required>
+
+            <button type="submit" class="submit-btn">Request</button>
+            <button type="button" onclick="closePopup()" class="close-btn">Close</button>
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

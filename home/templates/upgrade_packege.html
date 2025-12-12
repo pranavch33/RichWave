@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upgrade Package – ThriveOn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      color: #0f172a;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 22px;
+    }
+
+    .current-card {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      border-radius: 18px;
+      padding: 18px 20px;
+      color: #ffffff;
+      box-shadow: 0 18px 40px rgba(37, 99, 235, 0.45);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .current-left h2 {
+      font-size: 18px;
+      margin: 0 0 4px;
+    }
+
+    .current-left p {
+      font-size: 13px;
+      margin: 0;
+      opacity: 0.95;
+    }
+
+    .current-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.22);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .current-meta {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .current-meta strong {
+      font-size: 16px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.4fr 1.1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px 16px 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      border: 1px solid #e5e7eb;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      margin: 0 0 6px;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .upgrade-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pkg {
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px 12px;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .pkg-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .pkg-price {
+      font-size: 13px;
+      color: #111827;
+    }
+
+    .pkg-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #d1fae5;
+      color: #047857;
+      width: fit-content;
+    }
+
+    .pkg-footer {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-weight: 500;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 34px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn-ghost {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .note {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 6px;
+    }
+
+    .benefit-list {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 0;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .benefit-list li {
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-title">Upgrade your earning potential</div>
+  <div class="page-sub">
+    Higher package = higher commission + more skills unlocked.
+    Upgrade once, enjoy higher income on every future sale.
+  </div>
+
+  <!-- CURRENT PACKAGE CARD -->
+  <section class="current-card">
+    <div class="current-left">
+      <div class="current-pill">Your current package</div>
+      <h2>{{ current_package_name }}</h2>
+      <p>
+        Current package value:
+        <strong>₹{{ current_package_price }}</strong><br>
+        Approx. commission per sale:
+        <strong>₹{{ current_commission }}</strong>
+      </p>
+      <div class="current-meta">
+        <small>Upgrade to unlock higher commission slabs &amp; premium course content.</small>
+      </div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <!-- UPGRADE OPTIONS -->
+    <section class="card">
+      <h3>Available upgrade options</h3>
+      <p class="card-sub">
+        Choose any higher package once. You only pay the difference.
+        From next sale onwards, your commission will be calculated from the higher package.
+      </p>
+
+      {% if upgrade_options %}
+        <div class="upgrade-list">
+          {% for p in upgrade_options %}
+            <article class="pkg">
+              <div class="pkg-name">{{ p.name }}</div>
+              <div class="pkg-price">Package value: ₹{{ p.price }}</div>
+              <div class="pkg-badge">
+                Potential commission ≈ ₹{{ p.commission }}
+              </div>
+              <div class="pkg-footer">
+                <button class="btn btn-primary">
+                  Upgrade to {{ p.name }}
+                </button>
+                <button class="btn btn-ghost">
+                  View details
+                </button>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="font-size:13px; color:#6b7280;">
+          You are already on the highest package. 🎉 
+        </p>
+      {% endif %}
+
+      <p class="note">
+        Note: Right now upgrade buttons are only for design.
+        Payment integration &amp; automatic activation hum next step me add karenge.
+      </p>
+    </section>
+
+    <!-- INFORMATION / BENEFITS -->
+    <aside class="card">
+      <h3>Why upgrade?</h3>
+      <p class="card-sub">
+        ThriveOn is designed so that serious learners and earners get rewarded with higher commissions and deeper skills.
+      </p>
+      <ul class="benefit-list">
+        <li>⚡ Earn more from each sale with higher commission slabs.</li>
+        <li>🎓 Unlock advanced modules, bonuses and AI-based trainings.</li>
+        <li>🏆 Qualify faster for rewards, trophies and leadership levels.</li>
+        <li>🤝 Build authority as a serious digital marketer &amp; leader.</li>
+      </ul>
+      <p class="note">
+        This page is fully safe. Hamne aapke purane kisi page ko touch nahi kiya.
+        Ye sirf ek naya upgrade view hai.
+      </p>
+    </aside>
+  </div>
+
+</div>
+</body>
+</html>

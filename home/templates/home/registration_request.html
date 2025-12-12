@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Registration Request | ThriveOn</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body{
+        margin:0;
+        font-family:'Inter',sans-serif;
+        background:#f5f7ff;
+    }
+
+    .page-container{
+        width:95%;
+        margin:20px auto;
+    }
+
+    .top-bar{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:15px;
+    }
+
+    .top-bar h2{
+        margin:0;
+        font-size:22px;
+        font-weight:700;
+        color:#333;
+    }
+
+    .btn{
+        padding:10px 14px;
+        background:#e63946;
+        border-radius:6px;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:600;
+        margin-left:6px;
+    }
+    .btn:hover{
+        background:#d62839;
+    }
+
+    .card-box{
+        background:white;
+        padding:20px;
+        border-radius:12px;
+        box-shadow:0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:10px;
+    }
+
+    th{
+        background:#2d2d3a;
+        color:white;
+        font-size:14px;
+        padding:12px;
+        text-transform:uppercase;
+        letter-spacing:0.4px;
+    }
+
+    td{
+        padding:12px;
+        border-bottom:1px solid #eee;
+        font-size:14px;
+        color:#333;
+    }
+
+    .badge{
+        padding:6px 12px;
+        border-radius:6px;
+        font-size:12px;
+        font-weight:600;
+    }
+    .pending{ background:#fff3b0; color:#8a7200; }
+    .success{ background:#baffc9; color:#007f28; }
+    .failed{ background:#ffc6c6; color:#9b0000; }
+
+    .no-data{
+        text-align:center;
+        padding:15px;
+        color:#888;
+        font-size:15px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h2>Wallet Registration Request</h2>
+
+        <div>
+            <button class="btn">+ Create New ID</button>
+            <button class="btn">🔍 View</button>
+        </div>
+    </div>
+
+    <!-- CARD TABLE -->
+    <div class="card-box">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>State</th>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for r in requests %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.name }}</td>
+                    <td>{{ r.email }}</td>
+                    <td>{{ r.phone }}</td>
+                    <td>{{ r.state }}</td>
+                    <td>{{ r.plan }}</td>
+                    <td>₹{{ r.amount }}</td>
+
+                    <td>
+                        <span class="badge 
+                            {% if r.status == 'pending' %}pending
+                            {% elif r.status == 'success' %}success
+                            {% else %}failed{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+
+                    <td>{{ r.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="no-data">No Registration Requests Found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

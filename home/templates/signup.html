@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up – ThriveOn</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    :root {
+        --primary: #2563eb;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background: #f3f4f6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        width: 380px;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #111;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    p {
+        text-align: center;
+        color: #555;
+    }
+
+    label {
+        display: block;
+        margin-top: 15px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-top: 5px;
+        font-size: 15px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 25px;
+        padding: 15px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    a {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Create Account</h2>
+    <p>Join ThriveOn today. Start your journey.</p>
+
+    <form>
+
+        <label>Full Name</label>
+        <input type="text" placeholder="Enter your full name">
+
+        <label>Email Address</label>
+        <input type="email" placeholder="Enter your email">
+
+        <label>Password</label>
+        <input type="password" placeholder="Create a password">
+
+        <label>Confirm Password</label>
+        <input type="password" placeholder="Re-enter your password">
+
+        <button>Sign Up</button>
+    </form>
+
+    <p style="margin-top:20px; font-size:15px;">
+        Already have an account? 
+        <a href="login.html">Sign In</a>
+    </p>
+
+</div>
+
+</body>
+</html>

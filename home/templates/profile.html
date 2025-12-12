@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ThriveOn | Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --sidebar-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-soft: #e0edff;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --text-main: #0f172a;
+            --text-muted: #6b7280;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        /* ========== SIDEBAR (simple, jo already hai us jaisa) ========== */
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid #e5e7eb;
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 8px 14px;
+            border-bottom: 1px solid #eef0f5;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.03em;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .nav-section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #9ca3af;
+            padding: 4px 8px;
+            margin-top: 8px;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: 0.18s ease all;
+        }
+
+        .nav-link span.icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: #f3f4ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .nav-link span.label {
+            flex: 1;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(124, 58, 237, 0.35);
+        }
+
+        .nav-link.active span.icon {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .nav-link:hover:not(.active) {
+            background: #f3f4ff;
+            color: #111827;
+        }
+
+        .nav-footer {
+            margin-top: auto;
+            padding: 8px 8px 0;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* ========== MAIN AREA ========== */
+        .main {
+            padding: 20px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .top-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .page-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .top-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #ffffff;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .top-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 2px solid #e5e7ff;
+            background: linear-gradient(135deg, #4f46e5, #22d3ee);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .top-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .top-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .top-user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .top-user-role {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ========== PROFILE WRAPPER ========== */
+        .profile-wrapper {
+            background: radial-gradient(circle at top left, #eff6ff 0, transparent 36%),
+                        radial-gradient(circle at bottom right, #fce7f3 0, transparent 40%);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .section-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.1fr);
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--card-border);
+            padding: 16px 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .card-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .field-grid.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .field-value,
+        .field-input {
+            font-size: 13px;
+        }
+
+        .field-input input,
+        .field-input select {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            padding: 8px 10px;
+            font-size: 13px;
+            outline: none;
+            transition: 0.16s ease border, 0.16s ease box-shadow;
+            background: #f9fafb;
+        }
+
+        .field-input input:focus,
+        .field-input select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.18);
+            background: #ffffff;
+        }
+
+        .gender-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .gender-option {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .divider {
+            margin: 14px 0;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        /* Avatar card */
+        .avatar-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .avatar-preview {
+            width: 110px;
+            height: 110px;
+            border-radius: 999px;
+            border: 3px solid rgba(59, 130, 246, 0.5);
+            overflow: hidden;
+            background: radial-gradient(circle at 30% 20%, #4f46e5, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f9fafb;
+            font-weight: 700;
+            font-size: 28px;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .file-input {
+            width: 100%;
+            text-align: center;
+        }
+
+        .file-input input {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .save-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .btn-save {
+            border: none;
+            outline: none;
+            padding: 10px 22px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 16px 30px rgba(22, 163, 74, 0.35);
+            transition: 0.15s ease transform, 0.15s ease box-shadow, 0.15s ease filter;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.4);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 16px rgba(22, 163, 74, 0.35);
+        }
+
+        .btn-save span.icon {
+            font-size: 14px;
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .nav-section-label,
+            .nav-footer {
+                display: none;
+            }
+
+            .nav-list {
+                flex-direction: row;
+            }
+
+            .nav-link span.label {
+                display: none;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">T</div>
+            <div class="brand-text">
+                <div class="brand-name">ThriveOn</div>
+                <div class="brand-sub">Digital Growth Partners</div>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-label">Main</div>
+            <ul class="nav-list">
+                <li><a class="nav-link" href="/dashboard/"><span class="icon">📚</span><span class="label">My Courses</span></a></li>
+                <li><a class="nav-link" href="/affiliate-dashboard/"><span class="icon">📈</span><span class="label">Affiliate Dashboard</span></a></li>
+                <li><a class="nav-link active" href="/profile/"><span class="icon">👤</span><span class="label">Profile</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-label">Account</div>
+            <ul class="nav-list">
+                <li><a class="nav-link" href="/kyc/"><span class="icon">🪪</span><span class="label">KYC</span></a></li>
+                <li><a class="nav-link" href="/affiliate-link/"><span class="icon">🔗</span><span class="label">Affiliate Link</span></a></li>
+                <li><a class="nav-link" href="/leaderboard/"><span class="icon">🏆</span><span class="label">Leaderboard</span></a></li>
+                <li><a class="nav-link" href="/registration-request/"><span class="icon">📝</span><span class="label">Registration Request</span></a></li>
+                <li><a class="nav-link" href="/upgrade-request/"><span class="icon">⬆️</span><span class="label">Upgrade Request</span></a></li>
+                <li><a class="nav-link" href="/wallet-transaction/"><span class="icon">💳</span><span class="label">Wallet Transaction</span></a></li>
+                <li><a class="nav-link" href="/my-associate/"><span class="icon">👥</span><span class="label">My Associate</span></a></li>
+                <li><a class="nav-link" href="/referrals/"><span class="icon">🔁</span><span class="label">Referrals</span></a></li>
+                <li><a class="nav-link" href="/withdrawal-request/"><span class="icon">💸</span><span class="label">Withdrawal Request</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-label">Growth</div>
+            <ul class="nav-list">
+                <li><a class="nav-link" href="/upgrade/"><span class="icon">🚀</span><span class="label">Upgrade</span></a></li>
+                <li><a class="nav-link" href="/community/"><span class="icon">💬</span><span class="label">Community</span></a></li>
+                <li><a class="nav-link" href="/certificate/"><span class="icon">📜</span><span class="label">Certificate</span></a></li>
+                <li><a class="nav-link" href="/qualification/"><span class="icon">🎓</span><span class="label">Qualification</span></a></li>
+                <li><a class="nav-link" href="/industry-earning/"><span class="icon">💼</span><span class="label">Industry Earning</span></a></li>
+                <li><a class="nav-link" href="/security/"><span class="icon">🔒</span><span class="label">Security</span></a></li>
+            </ul>
+        </div>
+
+        <div class="nav-footer">
+            Logged in as <strong>{{ user.first_name|default:user.username }}</strong>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <main class="main">
+        <header class="topbar">
+            <div class="top-left">
+                <h1 class="page-title">User Profile</h1>
+                <p class="page-sub">Update your ThriveOn details. Changes yahi se poori website me reflect honge.</p>
+            </div>
+            <div class="top-right">
+                <div class="top-user">
+                    <div class="top-avatar">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="Avatar">
+                        {% else %}
+                            {{ user.first_name|default:user.username|slice:":2" | upper }}
+                        {% endif %}
+                    </div>
+                    <div class="top-user-info">
+                        <div class="top-user-name">{{ user.first_name|default:user.username }}</div>
+                        <div class="top-user-role">ThriveOn Partner</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="profile-wrapper">
+            <h2 class="section-title">Account Overview</h2>
+            <p class="section-sub">
+                Sponsor information upar dikhegi (read-only) aur niche se aap apna personal profile edit kar sakte ho.
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="profile-grid">
+                    <!-- LEFT: Sponsor + Personal Info -->
+                    <div class="left-col">
+                        <!-- Sponsor Info -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Sponsor Information</div>
+                                <div class="card-tag">Read only</div>
+                            </div>
+                            <div class="field-grid">
+                                <div class="field">
+                                    <div class="field-label">Name</div>
+                                    <div class="field-value text-sm">
+                                        {{ user.profile.sponsor_name|default:"Your sponsor name here" }}
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="field-label">Email</div>
+                                    <div class="field-value">
+                                        {{ user.profile.sponsor_email|default:"sponsor@example.com" }}
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="field-label">Phone</div>
+                                    <div class="field-value">
+                                        {{ user.profile.sponsor_phone|default:"+91 90000 00000" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <!-- Personal Info -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Personal Information</div>
+                                <div class="card-tag">Editable</div>
+                            </div>
+
+                            <div class="field-grid two">
+                                <div class="field">
+                                    <label class="field-label" for="name">Name *</label>
+                                    <div class="field-input">
+                                        <input type="text" id="name" name="name"
+                                               value="{{ user.first_name }}"
+                                               placeholder="Enter your name">
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="field-label" for="email">Email *</label>
+                                    <div class="field-input">
+                                        <input type="email" id="email" name="email"
+                                               value="{{ user.email }}"
+                                               placeholder="Enter your email">
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="field-label" for="phone">Phone *</label>
+                                    <div class="field-input">
+                                        <input type="text" id="phone" name="phone"
+                                               value="{{ profile.phone }}"
+                                               placeholder="Enter phone number">
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <div class="field-label">Gender *</div>
+                                    <div class="gender-row">
+                                        <label class="gender-option">
+                                            <input type="radio" name="gender" value="male"
+                                                {% if profile.gender == "male" %}checked{% endif %}>
+                                            <span>Male</span>
+                                        </label>
+                                        <label class="gender-option">
+                                            <input type="radio" name="gender" value="female"
+                                                {% if profile.gender == "female" %}checked{% endif %}>
+                                            <span>Female</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Avatar Card -->
+                    <div class="right-col">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Profile Photo</div>
+                                <div class="card-tag" style="background:#ecfdf5;color:#16a34a;">Preview</div>
+                            </div>
+
+                            <div class="avatar-wrapper">
+                                <div class="avatar-preview" id="avatarPreview">
+                                    {% if profile.avatar %}
+                                        <img src="{{ profile.avatar.url }}" alt="Avatar">
+                                    {% else %}
+                                        {{ user.first_name|default:user.username|slice:":2" | upper }}
+                                    {% endif %}
+                                </div>
+                                <p class="avatar-hint">
+                                    Recommended: square image, 400x400px, PNG/JPEG.  
+                                    Yeh photo dashboard, affiliate dashboard, top-bar sab jgh use hogi.
+                                </p>
+                                <div class="file-input">
+                                    <input type="file" name="avatar" id="avatarInput" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="save-row">
+                    <button type="submit" class="btn-save">
+                        <span class="icon">💾</span>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    // Frontend preview for avatar
+    const avatarInput = document.getElementById("avatarInput");
+    const avatarPreview = document.getElementById("avatarPreview");
+
+    if (avatarInput) {
+        avatarInput.addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                avatarPreview.innerHTML = "";
+                const img = document.createElement("img");
+                img.src = event.target.result;
+                avatarPreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+</body>
+</html>

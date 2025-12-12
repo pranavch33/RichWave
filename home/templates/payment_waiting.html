@@ -1,0 +1,44 @@
+def payment_waiting(request, pay_id):
+    try:
+        pay = PaymentRequest.objects.get(id=pay_id)
+    except:
+        return render(request, "error.html", {"msg": "Invalid Payment"})
+
+    # Auto verification logic (fake demo)
+    # REAL API baad me integrate karenge
+    import random
+    result = random.choice(["success", "failed"])
+
+    if result == "success":
+        pay.status = "success"
+        pay.save()
+
+        # create user account automatically
+        user = User.objects.create_user(
+            username=pay.buyer_email,
+            email=pay.buyer_email,
+            password=uuid.uuid4().hex[:8]
+        )
+
+        # create profile
+        Profile.objects.create(
+            user=user,
+            phone=pay.buyer_phone,
+            state="",
+            referral_code="",
+            rank="Beginner",
+        )
+
+        # add commission to seller
+        if pay.seller:
+            seller_profile = Profile.objects.get(user=pay.seller)
+            commission = float(pay.amount) * 0.70
+            seller_profile.wallet += commission
+            seller_profile.save()
+
+        return render(request, "payment_success.html", {"pay": pay})
+
+    else:
+        pay.status = "failed"
+        pay.save()
+        return render(request, "payment_failed.html", {"pay": pay})

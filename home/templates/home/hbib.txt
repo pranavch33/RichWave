@@ -1,0 +1,163 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Withdrawal Requests | ThriveOn</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f6f9ff;
+      --card:#ffffff;
+      --muted:#7b8794;
+      --accent:#3b82f6;
+      --danger:#ef4444;
+      --success:#10b981;
+      --shadow: 0 6px 20px rgba(59,130,246,0.06);
+      --table-head:#2f3b45;
+      --brand-grad: linear-gradient(135deg,#7c3aed 0%, #06b6d4 100%);
+    }
+    body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;color:#1f2937}
+    .wrap{max-width:1200px;margin:28px auto;padding:18px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .title{font-size:22px;font-weight:700;color:var(--table-head)}
+    .controls{display:flex;gap:12px;align-items:center}
+    .search{border:1px solid #e6eaf2;background:#fff;padding:8px 10px;border-radius:10px;display:flex;align-items:center;gap:8px}
+    .search input{border:0;outline:0;font-size:14px}
+    .btn{display:inline-block;padding:8px 14px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600}
+    .btn.secondary{background:#fff;border:1px solid #e6eaf2;color:#374151}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);}
+
+    /* table */
+    .table-wrap{overflow:auto;margin-top:18px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    thead th{background:#f1f5f9;text-align:left;padding:14px 12px;color:var(--muted);font-weight:700;border-bottom:1px solid #eef2f7}
+    tbody td{padding:16px 12px;border-bottom:1px solid #f3f6fb;color:#374151}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:600;font-size:13px}
+    .badge.pending{background:linear-gradient(90deg,#fff5eb,#fff8f2);color:#b45309;border:1px solid #fbe6c9;}
+    .badge.success{background:linear-gradient(90deg,#f0fdf4,#f8fffb);color:var(--success);border:1px solid #d1fae5;}
+    .badge.rejected{background:linear-gradient(90deg,#fff1f2,#fff6f7);color:var(--danger);border:1px solid #fecaca;}
+
+    .muted{color:var(--muted);font-size:13px}
+    .right{text-align:right}
+    .pagination{display:flex;gap:8px;list-style:none;padding:0;margin:14px 0 0}
+    .pagination li{display:inline-block}
+    .page-link{padding:8px 12px;border-radius:8px;border:1px solid #e6eaf2;background:#fff;color:#374151;text-decoration:none}
+    .page-link.active{background:var(--brand-grad);color:#fff;border:0;box-shadow:0 6px 18px rgba(99,102,241,0.14)}
+    @media (max-width:720px){
+      thead th:nth-child(3), tbody td:nth-child(3) { display:none; } /* hide method column on small screens */
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="title">Withdrawal Requests</div>
+      <div class="controls">
+        <form method="get" style="display:flex" class="search" action="">
+          <svg width="16" height="16" viewBox="0 0 24 24" style="opacity:.6"><path fill="currentColor" d="M21 20l-5.6-5.6A7.5 7.5 0 1 0 6.5 14a7.5 7.5 0 0 0 9.4-3.4L21 20z"/></svg>
+          <input name="q" value="{{ q }}" placeholder="Search amount / status / reference / date">
+          <button class="btn secondary" type="submit" style="margin-left:8px">Search</button>
+        </form>
+        <a href="?export=csv" class="btn" style="margin-left:8px">Export CSV</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Showing withdrawals — latest first</div>
+        <div class="muted">Total: <strong>{{ requests_page.paginator.count if requests_page.paginator }}</strong></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:52px">#</th>
+              <th>Name / Ref</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Method</th>
+              <th>Date</th>
+              <th class="right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if requests_page %}
+              {% for obj in requests_page %}
+                <tr>
+                  <td>{{ forloop.counter0|add:requests_page.start_index }}</td>
+
+                  {# Name / reference: try fields commonly present, fallback to user or str #}
+                  <td>
+                    <div style="font-weight:600">{{ obj.user.get_full_name|default:obj.user.username if obj.user }}</div>
+                    <div class="muted" style="margin-top:6px">
+                      {% if obj.reference %}Ref: {{ obj.reference }}{% elif obj.ref %}Ref: {{ obj.ref }}{% elif obj.transaction_id %}Txn: {{ obj.transaction_id }}{% else %}{{ obj.id }}{% endif %}
+                    </div>
+                  </td>
+
+                  <td style="font-weight:700">₹ {{ obj.amount|default:obj.value|default:"-" }}</td>
+
+                  <td>
+                    {% with st=(obj.status|default:"").lower %}
+                      {% if "success" in st or "completed" in st or "approved" in st %}
+                        <span class="badge success">Success</span>
+                      {% elif "pending" in st %}
+                        <span class="badge pending">Pending</span>
+                      {% elif "reject" in st or "failed" in st %}
+                        <span class="badge rejected">Rejected</span>
+                      {% else %}
+                        <span class="badge pending">{{ obj.status|default:"Unknown" }}</span>
+                      {% endif %}
+                    {% endwith %}
+                  </td>
+
+                  <td class="muted">
+                    {% if obj.method %}{{ obj.method }}{% elif obj.payment_method %}{{ obj.payment_method }}{% else %}-{% endif %}
+                  </td>
+
+                  <td class="muted">
+                    {% if obj.created_at %}{{ obj.created_at|date:"d M, Y H:i" }}{% elif obj.timestamp %}{{ obj.timestamp|date:"d M, Y H:i" }}{% else %}-{% endif %}
+                  </td>
+
+                  <td class="right">
+                    <a class="page-link" href="{% url 'withdrawal_request_detail' obj.id %}" style="padding:8px 10px">View</a>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="7" style="text-align:center;padding:40px 0" class="muted">No withdrawal requests found yet.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      {# Pagination controls #}
+      {% if requests_page.paginator %}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+        <ul class="pagination">
+          {% if requests_page.has_previous %}
+            <li><a class="page-link" href="?q={{ q }}&page={{ requests_page.previous_page_number }}">Prev</a></li>
+          {% endif %}
+          {% for p in requests_page.paginator.page_range %}
+            {% if requests_page.number == p %}
+              <li><a class="page-link active" href="#">{{ p }}</a></li>
+            {% elif p <= 2 or p > requests_page.paginator.num_pages - 2 or (p|add:-requests_page.number|abs) < 3 %}
+              <li><a class="page-link" href="?q={{ q }}&page={{ p }}">{{ p }}</a></li>
+            {% elif forloop.first and p > 2 %}
+              <li><span class="page-link">...</span></li>
+            {% endif %}
+          {% endfor %}
+          {% if requests_page.has_next %}
+            <li><a class="page-link" href="?q={{ q }}&page={{ requests_page.next_page_number }}">Next</a></li>
+          {% endif %}
+        </ul>
+
+        <div class="muted">Page {{ requests_page.number }} of {{ requests_page.paginator.num_pages }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

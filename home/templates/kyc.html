@@ -1,0 +1,167 @@
+{% if messages %}
+    {% for message in messages %}
+        <div style="background:#d4ffd9; border-left:5px solid #00aa33; color:#064d18; padding:12px; margin-bottom:15px; border-radius:6px; font-weight:600;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC – ThriveOn</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(10px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #222;
+            border-left: 5px solid #ff4d4d;
+            padding-left: 12px;
+            margin-bottom: 25px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #f9fbff;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: 0.25s;
+        }
+
+        input:focus, select:focus {
+            border-color: #4a8cff;
+            background: white;
+            box-shadow: 0 0 6px rgba(74, 140, 255, 0.4);
+            outline: none;
+        }
+
+        .btn {
+            margin-top: 30px;
+            padding: 14px;
+            width: 100%;
+            background: linear-gradient(135deg, #007bff, #0057c2);
+            color: white;
+            font-size: 17px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #0065d1, #004aad);
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <div class="title">Bank Account Information</div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="row">
+
+                <div>
+                    <label>Type *</label>
+                    {{ form.type }}
+                </div>
+
+                <div>
+                    <label>Bank Name *</label>
+                    {{ form.bank_name }}
+                </div>
+
+                <div>
+                    <label>Holder Name *</label>
+                    {{ form.holder_name }}
+                </div>
+
+                <div>
+                    <label>IFSC Code *</label>
+                    {{ form.ifsc }}
+                </div>
+
+                <div>
+                    <label>Account Number *</label>
+                    {{ form.account_number }}
+                </div>
+
+                <div>
+                    <label>UPI ID *</label>
+                    {{ form.upi_id }}
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn">Submit KYC</button>
+
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

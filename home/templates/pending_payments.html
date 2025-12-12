@@ -1,0 +1,30 @@
+<h2>Pending Payments</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Buyer Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Package</th>
+        <th>Amount</th>
+        <th>Referral</th>
+        <th>Action</th>
+    </tr>
+
+    {% for p in pending %}
+    <tr>
+        <td>{{ p.buyer_name }}</td>
+        <td>{{ p.buyer_email }}</td>
+        <td>{{ p.buyer_phone }}</td>
+        <td>{{ p.package_name }}</td>
+        <td>{{ p.amount }}</td>
+        <td>{{ p.referral_code_used }}</td>
+
+        <td>
+            <a href="/verify-payment/{{ p.id }}/" style="color:green;">Verify</a>
+            &nbsp; | &nbsp;
+            <a href="/reject-payment/{{ p.id }}/" style="color:red;">Reject</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

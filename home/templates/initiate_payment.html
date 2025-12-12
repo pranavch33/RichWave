@@ -1,0 +1,55 @@
+import json, time, base64, hashlib, requests
+from django.shortcuts import redirect
+from django.conf import settings
+
+def initiate_payment(request):
+
+    # Amount in paise (₹2699 = 269900)
+    amount = 269900  # <-- Apna amount paise me
+
+    merchant_transaction_id = "TXN" + str(int(time.time()))
+
+    payload = {
+        "merchantId": settings.PHONEPE_MERCHANT_ID,
+        "merchantTransactionId": merchant_transaction_id,
+        "amount": amount,
+        "redirectUrl": settings.PHONEPE_REDIRECT_URL,
+        "callbackUrl": settings.PHONEPE_CALLBACK_URL,
+        "paymentInstrument": {
+            "type": "PAY_PAGE"
+        }
+    }
+
+    # Convert payload to Base64
+    payload_string = json.dumps(payload)
+    base64_payload = base64.b64encode(payload_string.encode()).decode()
+
+    # Create checksum
+    checksum = hashlib.sha256(
+        (base64_payload + "/pg/v1/pay" + settings.PHONEPE_SALT_KEY).encode()
+    ).hexdigest() + "###" + settings.PHONEPE_SALT_INDEX
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-VERIFY": checksum
+    }
+
+    # API Request
+    response = requests.post(
+        "https://api.phonepe.com/apis/hermes/pg/v1/pay",
+        json={"request": base64_payload},
+        headers=headers
+    ).json()
+
+    # Debugging: print whole response
+    print("PHONEPE RESPONSE:", response)
+
+    # If PhonePe sent error
+    if "data" not in response:
+        return redirect("/payment/failed/")   # or show your own page
+
+    # Extract redirect URL
+    redirect_url = response["data"]["instrumentResponse"]["redirectInfo"]["url"]
+
+    # Redirect customer to PhonePe payment page
+    return redirect(redirect_url)

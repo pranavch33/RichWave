@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ThriveOn – Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg-main: #050816;
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --accent: #38bdf8;
+      --accent2: #a855f7;
+      --accent3: #f97316;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.6);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #1e293b, transparent 55%),
+        radial-gradient(circle at bottom, #0f172a, #020617 70%);
+      color: var(--text-main);
+      padding: 20px 12px 40px;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .title-block h1 {
+      font-size: 26px;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-pill {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .badge-live {
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-small {
+      font-size: 12px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.7);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .btn-small.primary {
+      background: linear-gradient(120deg, #38bdf8, #a855f7);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 12px 26px rgba(56, 189, 248, 0.35);
+    }
+
+    /* TABS */
+    .tabs {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      padding: 4px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .tab.active {
+      background: linear-gradient(120deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.25));
+      color: #e5e7eb;
+    }
+
+    /* TOP 3 SECTION */
+    .top3-wrap {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .glass-card {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--glass-border);
+      background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.8),
+        rgba(15, 23, 42, 0.4)
+      );
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 14px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.18), transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(168, 85, 247, 0.18), transparent 55%),
+        radial-gradient(circle at 0 100%, rgba(236, 72, 153, 0.16), transparent 55%);
+      opacity: 0.85;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .glass-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .rank-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.8);
+      margin-bottom: 12px;
+    }
+
+    .rank-badge span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #facc15;
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+    }
+
+    .avatar-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 999px;
+      margin: 0 auto 10px;
+      padding: 3px;
+      background: conic-gradient(from 180deg, #38bdf8, #a855f7, #f97316, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-ring img {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 3px solid rgba(15, 23, 42, 0.9);
+    }
+
+    .top-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .top-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .top-amount {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(120deg, #facc15, #34d399);
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .top-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* LIST SECTION */
+    .list-wrap {
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.9),
+        rgba(15, 23, 42, 0.7)
+      );
+      backdrop-filter: blur(18px);
+      padding: 16px 14px 10px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+    }
+
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .list-header-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .list-header-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .filter-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      color: var(--text-muted);
+    }
+
+    .lb-list {
+      list-style: none;
+      margin-top: 8px;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 6px;
+      border-radius: var(--radius-md);
+      transition: background 0.18s ease, transform 0.12s ease;
+    }
+
+    .lb-row:hover {
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .lb-rank {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e5e7eb;
+      background: rgba(31, 41, 55, 0.9);
+    }
+
+    .lb-rank.rank-4 { background: rgba(56, 189, 248, 0.4); }
+    .lb-rank.rank-5 { background: rgba(168, 85, 247, 0.4); }
+    .lb-rank.rank-6 { background: rgba(236, 72, 153, 0.4); }
+    .lb-rank.rank-7 { background: rgba(14, 165, 233, 0.4); }
+    .lb-rank.rank-8 { background: rgba(52, 211, 153, 0.4); }
+    .lb-rank.rank-9 { background: rgba(234, 179, 8, 0.45); }
+    .lb-rank.rank-10 { background: rgba(248, 113, 113, 0.4); }
+
+    .lb-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid rgba(148, 163, 184, 0.5);
+      flex-shrink: 0;
+    }
+
+    .lb-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .lb-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .lb-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .lb-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .lb-right {
+      margin-left: auto;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 11px;
+    }
+
+    .lb-amount {
+      font-size: 13px;
+      font-weight: 600;
+      color: #facc15;
+    }
+
+    .lb-change.up {
+      color: #4ade80;
+    }
+
+    .lb-change.down {
+      color: #f97373;
+    }
+
+    .lb-change.same {
+      color: var(--text-muted);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .top3-wrap {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .list-wrap {
+        padding: 12px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="title-block">
+      <h1>ThriveOn Leaderboard <span class="badge-live">● LIVE</span></h1>
+      <div class="title-pill">Top performers · Real-time affiliate earnings</div>
+    </div>
+
+    <div class="header-actions">
+      <div class="tabs">
+    <a href="?period=today" class="tab {% if period == 'today' %}active{% endif %}">Today</a>
+    <a href="?period=7days" class="tab {% if period == '7days' %}active{% endif %}">7 Days</a>
+    <a href="?period=30days" class="tab {% if period == '30days' %}active{% endif %}">30 Days</a>
+    <a href="?period=all" class="tab {% if period == 'all' %}active{% endif %}">All Time</a>
+</div>
+
+<style>
+.tabs a {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #1b1d2b;
+    color: white;
+    text-decoration: none;
+    margin-right: 6px;
+}
+.tabs a.active {
+    background: #4CAF50;
+}
+</style>
+      <button class="btn-small primary">View Full Stats</button>
+    </div>
+  </header>
+
+  <!-- TOP 3 CHAMPIONS -->
+  <section class="top3-wrap">
+    <!-- Rank 2 -->
+    <article class="glass-card">
+      <div class="glass-inner">
+        <div class="rank-badge">
+          <span class="dot"></span>
+          #2 · Consistent Closer
+        </div>
+        <div class="avatar-ring">
+          <img src="https://i.ibb.co/C3JYL4r0/IMG-20251119-WA0009.jpg" alt="Sachin" />
+        </div>
+        <div class="top-name">Sachin Chavan</div>
+        <div class="top-tag">Co-Founder · CMO</div>
+        <div class="top-amount">₹ 18,540</div>
+        <div class="top-sub">Weekly affiliate earnings</div>
+      </div>
+    </article>
+
+    <!-- Rank 1 -->
+    <article class="glass-card">
+      <div class="glass-inner">
+        <div class="rank-badge">
+          <span class="dot"></span>
+          #1 · Top Performer
+        </div>
+        <div class="avatar-ring" style="width:102px;height:102px;">
+          <img src="https://i.ibb.co/Pv34SyTZ/IMG-20251031-193157-773.webp" alt="Pranav" />
+        </div>
+        <div class="top-name">Pranav Chavan</div>
+        <div class="top-tag">Founder · AI & Digital Strategist</div>
+        <div class="top-amount">₹ 24,980</div>
+        <div class="top-sub">This month’s total earnings</div>
+      </div>
+    </article>
+
+    <!-- Rank 3 -->
+    <article class="glass-card">
+      <div class="glass-inner">
+        <div class="rank-badge">
+          <span class="dot"></span>
+          #3 · Rising Star
+        </div>
+        <div class="avatar-ring">
+          <img src="https://i.ibb.co/27j2zS3t/IMG-20251123-WA0010.jpg" alt="Rohina" />
+        </div>
+        <div class="top-name">Rohina Khan</div>
+        <div class="top-tag">Affiliate Partner</div>
+        <div class="top-amount">₹ 15,260</div>
+        <div class="top-sub">Top closer in Basic plan</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- TOP 10 LIST -->
+  <section class="list-wrap">
+    <div class="list-header">
+      <div>
+        <div class="list-header-title">Top 10 ThriveOn Leaders</div>
+        <div class="list-header-sub">Updated in real time · Highest earning partners</div>
+      </div>
+      <div class="filter-pill">All Plans</div>
+    </div>
+
+    <ol class="lb-list">
+      <!-- Rank 1–3 already shown above, so we start list from 1 just for display -->
+      <li class="lb-row">
+        <div class="lb-rank rank-4">1</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/Pv34SyTZ/IMG-20251031-193157-773.webp" alt="Pranav" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Pranav Chavan</div>
+          <div class="lb-tag">Founder · ThriveOn Package</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 24,980</div>
+          <div class="lb-change up">▲ +18% vs last week</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-5">2</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/C3JYL4r0/IMG-20251119-WA0009.jpg" alt="Sachin" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Sachin Chavan</div>
+          <div class="lb-tag">Co-Founder · Master Thrive</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 18,540</div>
+          <div class="lb-change same">• Stable performance</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-6">3</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/27j2zS3t/IMG-20251123-WA0010.jpg" alt="Rohina" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Rohina Khan</div>
+          <div class="lb-tag">Affiliate · Premium Thrive</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 15,260</div>
+          <div class="lb-change up">▲ +9% vs last week</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-7">4</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/0jWPXKvf/IMG-20251123-WA0007.jpg" alt="Anushree" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Anushree Prajapati</div>
+          <div class="lb-tag">Affiliate · Growth Thrive</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 12,430</div>
+          <div class="lb-change up">▲ +22% growth</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-8">5</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/C57C2mBb/IMG-20251123-WA0009.jpg" alt="Nisha" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Nisha</div>
+          <div class="lb-tag">Affiliate · Grand Thrive</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 10,870</div>
+          <div class="lb-change same">• New this month</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-9">6</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/Y7r64zCH/IMG-20251123-WA0008.jpg" alt="Roshan" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">Roshan Chavan</div>
+          <div class="lb-tag">Affiliate · Basic Thrive</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 9,320</div>
+          <div class="lb-change up">▲ +5% this week</div>
+        </div>
+      </li>
+
+      <li class="lb-row">
+        <div class="lb-rank rank-10">7</div>
+        <div class="lb-avatar">
+          <img src="https://i.ibb.co/27j2zS3t/IMG-20251123-WA0010.jpg" alt="User" />
+        </div>
+        <div class="lb-main">
+          <div class="lb-name">New Leader</div>
+          <div class="lb-tag">Affiliate · Starter</div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-amount">₹ 7,540</div>
+          <div class="lb-change down">▼ -2% vs last week</div>
+        </div>
+      </li>
+
+      <!-- You can add till rank 10 with same pattern -->
+    </ol>
+  </section>
+
+</div>
+</body>
+</html>
