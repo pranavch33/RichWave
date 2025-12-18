@@ -385,40 +385,32 @@ def manual_id_create(request):
         )
 
     return redirect("manual_id_form")
-        # Basic safety: same email ka user already to nahi?
-        if User.objects.filter(username=email).exists():
-            error = "Is email se user already bana hua hai."
-        else:
-            try:
-                user = User.objects.create_user(
-                    username=email,
-                    email=email,
-                    password="123456"
-                )
+       # Basic safety: same email ka user already to nahi
+if User.objects.filter(username=email).exists():
+    error = "Is email se user already bana hua hai."
+    return render(request, "manual_id_form.html", {
+        "error": error
+    })
 
-                # ⚠️ Yaha Profile ke field naam tumhare model ke hisaab se honge
-                profile = Profile.objects.create(
-                    user=user,
-                    phone=phone,
-                    state=state,
-                    referral_code=sponsor or "",
-                    purchased_package=package_name,
-                    wallet_balance=0,
-                )
+# User create
+user = User.objects.create_user(
+    username=email,
+    email=email,
+    password="123456"
+)
 
-                # 👉 Yahi jagah hai jaha tum baad me
-                # commission / leaderboard ka same logic jod sakte ho
-                # jo payment success me use karte ho
+# Profile create (agar Profile model hai)
+Profile.objects.create(
+    user=user,
+    phone=phone,
+    state=state,
+    sponsor_code=sponsor,
+    package=package
+)
 
-                success = f"ID ban gayi ✅  Username: {email}  Password: 123456"
-            except Exception as e:
-                error = f"Kuch galat ho gaya: {e}"
-
-        return render(request, "manual_id_create.html", {
-            "error": error,
-            "success": success,
-        })
-
+return render(request, "manual_id_form.html", {
+    "success": "Manual ID successfully created!"
+})
     # GET request: form dikhao
     return render(request, "manual_id_create.html")
 
