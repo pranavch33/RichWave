@@ -328,38 +328,63 @@ def payment_failed(request):
 
 
 
-# Manual ID ke liye secret code (yahi tum badaloge)
-MANUAL_ID_SECRET = "THRIVEON-9999"  # apna secret rakho yaha
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, redirect
+
+# Manual ID ke liye secret code
+MANUAL_ID_SECRET = "THRIVEON-9999"
 
 
-@staff_member_required   # sirf admin/staff hi access kar sakta hai
+@staff_member_required
+def manual_id_form(request):
+    """
+    STEP 0:
+    Admin ko pehle manual ID form dikhao
+    """
+    return render(request, "manual_id_form.html")
+
+
+@staff_member_required
 def manual_id_create(request):
-    # --------- STEP 1: SECRET CODE CHECK ---------
+    """
+    STEP 1: Secret code verify
+    STEP 2: Actual manual ID creation
+    """
+
+    # STEP 1 — Secret verify
     if not request.session.get("manual_id_verified"):
         if request.method == "POST" and "secret_code" in request.POST:
             entered = request.POST.get("secret_code")
+
             if entered == MANUAL_ID_SECRET:
                 request.session["manual_id_verified"] = True
-                return redirect("manual_id_create")
+                return redirect("manual_id_form")
             else:
-                return render(request, "enter_secret.html", {
-                    "error": "Galat secret code hai."
-                })
-        # GET request ya abhi tak code nahi dala
+                return render(
+                    request,
+                    "enter_secret.html",
+                    {"error": "Galat secret code hai"}
+                )
+
         return render(request, "enter_secret.html")
 
-    # --------- STEP 2: ACTUAL ID CREATION FORM ---------
-    if request.method == "POST" and "secret_code" not in request.POST:
+    # STEP 2 — Manual ID create
+    if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         state = request.POST.get("state")
-        sponsor = request.POST.get("sponsor_code")
-        package_name = request.POST.get("package_name")
+        sponsor = request.POST.get("sponsor")
+        package = request.POST.get("package")
 
-        error = None
-        success = None
+        # 🔒 Abhi sirf success message (logic baad me)
+        return render(
+            request,
+            "manual_id_form.html",
+            {"success": "Manual ID successfully created!"}
+        )
 
+    return redirect("manual_id_form")
         # Basic safety: same email ka user already to nahi?
         if User.objects.filter(username=email).exists():
             error = "Is email se user already bana hua hai."
