@@ -144,3 +144,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 LOGIN_URL = '/login/'
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app",
+    "https://thriveonindia.com",
+    "https://www.thriveonindia.com"
+]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
