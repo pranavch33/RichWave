@@ -170,14 +170,9 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings
-from .models import Package, PaymentRequest
-
-from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.create_order_request import CreateOrderRequest
-
+from cashfree_pg.api_client import ApiClient
+from cashfree_pg.configuration import Configuration
+from cashfree_pg.api import OrderApi
 
 def checkout(request, slug):
     package = get_object_or_404(Package, slug=slug)
@@ -188,7 +183,6 @@ def checkout(request, slug):
         phone = request.POST.get("phone")
         sponsor = request.POST.get("sponsor_code")
 
-        # 1️⃣ Create payment entry
         pay = PaymentRequest.objects.create(
             buyer_name=name,
             buyer_email=email,
@@ -199,33 +193,39 @@ def checkout(request, slug):
             status="pending"
         )
 
-        # 2️⃣ Cashfree config
-        Cashfree.XClientId = settings.CASHFREE_APP_ID
-Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-Cashfree.XEnvironment = "SANDBOX"   # 🔥 THIS IS IMPORTANT
+        # ✅ Cashfree NEW SDK config
+        config = Configuration(
+            host="https://sandbox.cashfree.com/pg",
+            api_key=settings.CASHFREE_APP_ID,
+            api_secret=settings.CASHFREE_SECRET_KEY
+        )
 
-        # 3️⃣ Create order
-        order_request = CreateOrderRequest(
-            order_id=str(pay.id),
-            order_amount=float(package.price),
-            order_currency="INR",
-            customer_details={
+        client = ApiClient(config)
+        order_api = OrderApi(client)
+
+        order_request = {
+            "order_id": str(pay.id),
+            "order_amount": float(package.price),
+            "order_currency": "INR",
+            "customer_details": {
                 "customer_id": str(pay.id),
                 "customer_name": name,
                 "customer_email": email,
-                "customer_phone": phone,
+                "customer_phone": phone
             },
-            order_meta={
-                "return_url": "https://yourdomain.com/payment-success/?order_id={order_id}"
+            "order_meta": {
+                "return_url": "https://www.thriveonindia.com/payment/success/?order_id={order_id}"
             }
+        }
+
+        response = order_api.create_order(order_request)
+
+        return redirect(
+            f"https://payments.cashfree.com/pg/session/{response.data.payment_session_id}"
         )
 
-        response = Cashfree().PGCreateOrder(order_request)
-
-        # 4️⃣ Redirect to Cashfree hosted page
-        return redirect(response.data.payment_session_id)
-
     return render(request, "checkout.html", {"package": package})
+
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
