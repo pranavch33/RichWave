@@ -169,56 +169,73 @@ def leaderboard(request):
         "period": period,
     })
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings   # 👈 YE ADD
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import uuid
+
 from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
-def checkout(request, slug):
-    package = get_object_or_404(Package, slug=slug)
 
-    # ✅ STEP 1: GET = sirf page dikhao
+
+# ==========================
+# CASHFREE CONFIG (GLOBAL)
+# ==========================
+Cashfree.XClientId = settings.CASHFREE_APP_ID
+Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+Cashfree.XEnvironment = Cashfree.Environment.SANDBOX
+Cashfree.XApiVersion = "2023-08-01"   # 🔥 MOST IMPORTANT LINE
+
+
+# ==========================
+# CHECKOUT VIEW
+# ==========================
+@csrf_exempt
+def checkout(request):
     if request.method == "GET":
-        return render(request, "checkout.html", {"package": package})
+        return render(request, "checkout/basic.html")
 
-    # ✅ STEP 2: POST = payment create
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
 
-        pay = PaymentRequest.objects.create(
-            buyer_name=name,
-            buyer_email=email,
-            buyer_phone=phone,
-            package_name=package.name,
-            amount=package.price,
-            status="pending"
-        )
+        order_id = f"ORDER_{uuid.uuid4().hex[:12]}"
+        amount = 529.00
 
-        Cashfree.XClientId = settings.CASHFREE_APP_ID
-        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = Cashfree.SANDBOX
-        Cashfree.XApiVersion = "2023-08-01"
+        try:
+            order_request = CreateOrderRequest(
+                order_id=order_id,
+                order_amount=amount,
+                order_currency="INR",
+                customer_details={
+                    "customer_id": order_id,
+                    "customer_name": name,
+                    "customer_email": email,
+                    "customer_phone": phone,
+                },
+                order_meta={
+                    "return_url": "https://www.thriveonindia.com/payment/success/"
+                }
+            )
 
-        order_request = CreateOrderRequest(
-            order_id=f"ORD_{pay.id}",
-            order_amount=float(package.price),
-            order_currency="INR",
-            customer_details={
-                "customer_id": f"CUST_{pay.id}",
-                "customer_name": name,
-                "customer_email": email,
-                "customer_phone": phone,
-            },
-            order_meta={
-                "return_url": "https://thriveonindia.com/payment/success/"
-            }
-        )
+            response = Cashfree().PGCreateOrder(order_request)
 
-        response = Cashfree().PGCreateOrder(order_request)
+            payment_session_id = response.data.payment_session_id
 
-        # ✅ ONLY HERE payment_session_id exists
-        return redirect(response.data["payment_session_id"])
+            return redirect(
+                f"https://sandbox.cashfree.com/pg/checkout?payment_session_id={payment_session_id}"
+            )
+
+        except Exception as e:
+            return render(request, "checkout/error.html", {"error": str(e)})
+
+
+# ==========================
+# SUCCESS PAGE
+# ==========================
+def payment_success(request):
+    return render(request, "checkout/success.html")
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
