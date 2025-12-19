@@ -132,12 +132,7 @@ ALLOWED_REDIRECT_HOSTS = ['*']
 
 SECURE_REDIRECT_ALLOWED_SCHEMES = ['http', 'https', 'upi']
 
-PHONEPE_MERCHANT_ID = "PGTESTPAYUAT"
-PHONEPE_SALT_KEY = "099eb0cd-02d9-4c8e-a693-8d3006fa9b48"
-PHONEPE_SALT_INDEX = "1"
 
-PHONEPE_REDIRECT_URL = "http://localhost:8000/payment/success/"
-PHONEPE_CALLBACK_URL = "http://localhost:8000/phonepe/callback/"
 
 DEBUG = True
 
