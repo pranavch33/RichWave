@@ -169,85 +169,58 @@ def leaderboard(request):
         "period": period,
     })
 
-from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
+from django.shortcuts import redirect
+import requests
 import uuid
+from django.conf import settings
 
-from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.create_order_request import CreateOrderRequest
-
-
-# ================= CASHFREE CONFIG =================
-Cashfree.XClientId = settings.CASHFREE_APP_ID
-Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-Cashfree.XEnvironment = "SANDBOX"
-Cashfree.XApiVersion = "2023-08-01"
-
-
-# ================= PACKAGES =================
-PACKAGES = {
-    "basic": {"name": "Thrive Basic Package", "amount": 529},
-    "grow": {"name": "Grow Thrive Package", "amount": 999},
-    "prime": {"name": "Thrive Prime Package", "amount": 1498},
-    "elite": {"name": "Thrive Elite Package", "amount": 2699},
-    "power": {"name": "Thrive Power Package", "amount": 5698},
-    "ultimate": {"name": "Thrive Ultimate Package", "amount": 11699},
-}
-
-
-# ================= CHECKOUT =================
-@csrf_exempt
 def checkout(request, slug):
-    if slug not in PACKAGES:
-        return render(request, "checkout/error.html", {"error": "Invalid package"})
-
-    package = PACKAGES[slug]
-
-    if request.method == "GET":
-        return render(
-            request,
-            "checkout/checkout.html",
-            {
-                "package_name": package["name"],
-                "amount": package["amount"],
-                "slug": slug,
-            },
-        )
-
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
 
-        order_id = f"ORDER_{uuid.uuid4().hex[:12]}"
+        package_prices = {
+            "basic": 529,
+            "grow": 999,
+            "prime": 1498,
+            "elite": 2699,
+            "power": 5698,
+            "ultimate": 11699,
+        }
 
-        try:
-            order_request = CreateOrderRequest(
-                order_id=order_id,
-                order_amount=float(package["amount"]),
-                order_currency="INR",
-                customer_details={
-                    "customer_id": order_id,
-                    "customer_name": name,
-                    "customer_email": email,
-                    "customer_phone": phone,
-                },
-                order_meta={
-                    "return_url": "https://www.thriveonindia.com/payment/success/"
-                },
-            )
+        amount = package_prices.get(slug)
+        if not amount:
+            return redirect("/")
 
-            response = Cashfree().PGCreateOrder(order_request)
-            payment_session_id = response.data.payment_session_id
+        order_id = f"order_{uuid.uuid4().hex[:12]}"
 
-            return redirect(
-                f"https://sandbox.cashfree.com/pg/checkout?payment_session_id={payment_session_id}"
-            )
+        headers = {
+            "x-client-id": settings.CASHFREE_CLIENT_ID,
+            "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+            "x-api-version": "2023-08-01",
+            "Content-Type": "application/json"
+        }
 
-        except Exception as e:
-            return render(request, "error.html", {"error": str(e)})
+        payload = {
+            "order_id": order_id,
+            "order_amount": amount,
+            "order_currency": "INR",
+            "customer_details": {
+                "customer_id": "cust_001",
+                "customer_email": request.POST.get("email"),
+                "customer_phone": request.POST.get("phone"),
+                "customer_name": request.POST.get("name"),
+            },
+            "order_meta": {
+                "return_url": "https://thriveonindia.com/payment-success/?order_id={order_id}"
+            }
+        }
 
+        res = requests.post(
+            "https://api.cashfree.com/pg/orders",
+            headers=headers,
+            json=payload
+        ).json()
+
+        return redirect(res["payment_link"])
 
 # ================= SUCCESS =================
 def payment_success(request):
