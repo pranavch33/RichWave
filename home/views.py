@@ -172,7 +172,11 @@ def leaderboard(request):
     })
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from .models import Package, PaymentRequest
+
+from cashfree_pg.api_client import Cashfree
+from cashfree_pg.models.create_order_request import CreateOrderRequest
 
 
 def checkout(request, slug):
@@ -182,11 +186,9 @@ def checkout(request, slug):
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
-        password = request.POST.get("password")
-        state = request.POST.get("state")
         sponsor = request.POST.get("sponsor_code")
 
-        # Create Payment Request entry in database
+        # 1️⃣ Create payment entry
         pay = PaymentRequest.objects.create(
             buyer_name=name,
             buyer_email=email,
@@ -194,22 +196,35 @@ def checkout(request, slug):
             package_name=package.name,
             amount=package.price,
             sponsor_code=sponsor,
-            status="pending",
+            status="pending"
         )
 
-        # UPI deep link
-        upi_id = "9021530598-2@axl"   # <-- Yaha apna UPI ID likhna
-        amount = package.price
-        tr_no = pay.id
+        # 2️⃣ Cashfree config
+        Cashfree.XClientId = settings.CASHFREE_APP_ID
+        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+        Cashfree.XEnvironment = Cashfree.Environment.SANDBOX  
+        # PROD ke liye -> PRODUCTION
 
-        upi_link = (
-            f"upi://pay?pa={upi_id}"
-            f"&pn=ThriveOn"
-            f"&am={amount}"
-            f"&tn=TXN{tr_no}"
+        # 3️⃣ Create order
+        order_request = CreateOrderRequest(
+            order_id=str(pay.id),
+            order_amount=float(package.price),
+            order_currency="INR",
+            customer_details={
+                "customer_id": str(pay.id),
+                "customer_name": name,
+                "customer_email": email,
+                "customer_phone": phone,
+            },
+            order_meta={
+                "return_url": "https://yourdomain.com/payment-success/?order_id={order_id}"
+            }
         )
 
-        return render(request, "open_upi.html", {"upi_link": upi_link})
+        response = Cashfree().PGCreateOrder(order_request)
+
+        # 4️⃣ Redirect to Cashfree hosted page
+        return redirect(response.data.payment_session_id)
 
     return render(request, "checkout.html", {"package": package})
 # ----------------------------
