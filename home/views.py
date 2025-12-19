@@ -168,6 +168,11 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings   # 👈 YE ADD
+from cashfree_pg.api_client import Cashfree
+from cashfree_pg.models.create_order_request import CreateOrderRequest
 def checkout(request, slug):
     package = get_object_or_404(Package, slug=slug)
 
