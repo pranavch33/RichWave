@@ -188,7 +188,6 @@ def checkout(request, slug):
         phone = request.POST.get("phone")
         sponsor = request.POST.get("sponsor_code")
 
-        # 1️⃣ Save payment entry
         pay = PaymentRequest.objects.create(
             buyer_name=name,
             buyer_email=email,
@@ -199,14 +198,13 @@ def checkout(request, slug):
             status="pending"
         )
 
-        # 2️⃣ Cashfree configuration (CORRECT WAY)
-        Cashfree.configure(
-            Cashfree.SANDBOX,
-            settings.CASHFREE_APP_ID,
-            settings.CASHFREE_SECRET_KEY
+        # ✅ Correct Cashfree client (NO configure)
+        client = Cashfree(
+            app_id=settings.CASHFREE_APP_ID,
+            secret_key=settings.CASHFREE_SECRET_KEY,
+            environment=Cashfree.SANDBOX
         )
 
-        # 3️⃣ Create order
         order_request = CreateOrderRequest(
             order_id=str(pay.id),
             order_amount=float(package.price),
@@ -222,14 +220,11 @@ def checkout(request, slug):
             }
         )
 
-        # 4️⃣ Call Cashfree
-        response = Cashfree().PGCreateOrder(order_request)
+        response = client.PGCreateOrder(order_request)
 
-        # 5️⃣ Redirect to hosted payment page
         return redirect(response.data.payment_session_id)
 
     return render(request, "checkout.html", {"package": package})
-
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
