@@ -170,24 +170,24 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings
-
-from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.create_order_request import CreateOrderRequest
-
-from .models import Package, PaymentRequest
-
-
 def checkout(request, slug):
     package = get_object_or_404(Package, slug=slug)
 
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
         sponsor = request.POST.get("sponsor_code")
 
+        # 🔒 HARD VALIDATION (Cashfree safe)
+        phone = "".join(filter(str.isdigit, phone))
+        if len(phone) != 10:
+            return render(request, "checkout.html", {
+                "package": package,
+                "error": "Enter valid 10 digit mobile number"
+            })
+
+        # DB entry (unchanged)
         pay = PaymentRequest.objects.create(
             buyer_name=name,
             buyer_email=email,
@@ -198,30 +198,35 @@ def checkout(request, slug):
             status="pending"
         )
 
-        # ✅ Correct Cashfree init
+        # ✅ Cashfree INIT (ONLY ONCE)
         Cashfree.XClientId = settings.CASHFREE_APP_ID
         Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
         Cashfree.XEnvironment = Cashfree.SANDBOX
         Cashfree.XApiVersion = "2023-08-01"
 
+        # ✅ Order create
         order_request = CreateOrderRequest(
-    order_id=f"ORD_{uuid.uuid4().hex[:10]}",   # ✅ always >10 chars
-    order_amount=float(package.price),
-    order_currency="INR",
-    customer_details={
-        "customer_id": f"CUST_{pay.id}",       # ✅ "CUST_1" length >3
-        "customer_name": str(name),
-        "customer_email": str(email),
-        "customer_phone": str(phone).strip(), # ✅ string + 10 digit
-    },
-    order_meta={
-        "return_url": "https://www.thriveonindia.com/payment/success/"
-    }
-)
+            order_id=f"ORD{pay.id}{uuid.uuid4().hex[:6]}",
+            order_amount=float(package.price),
+            order_currency="INR",
+            customer_details={
+                "customer_id": f"CUST{pay.id}",
+                "customer_name": name,
+                "customer_email": email,
+                "customer_phone": phone,
+            },
+            order_meta={
+                "return_url": "https://www.thriveonindia.com/payment/success/"
+            }
+        )
 
         response = Cashfree().PGCreateOrder(order_request)
 
-        return redirect(response.data.payment_session_id)
+        # 🔥 REAL PAYMENT PAGE (THIS WAS MISSING)
+        payment_session_id = response.data.payment_session_id
+        payment_url = f"https://payments.cashfree.com/order/#/{payment_session_id}"
+
+        return redirect(payment_url)
 
     return render(request, "checkout.html", {"package": package})
 # ----------------------------
