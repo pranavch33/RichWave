@@ -181,7 +181,7 @@ from cashfree_pg.models.create_order_request import CreateOrderRequest
 # ================= CASHFREE CONFIG =================
 Cashfree.XClientId = settings.CASHFREE_APP_ID
 Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-Cashfree.XEnvironment = Cashfree.Environment.SANDBOX
+Cashfree.XEnvironment = "SANDBOX"
 Cashfree.XApiVersion = "2023-08-01"
 
 
