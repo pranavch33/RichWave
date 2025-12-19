@@ -173,7 +173,7 @@ def leaderboard(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 
-from cashfree_pg import Cashfree
+from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 
 from .models import Package, PaymentRequest
