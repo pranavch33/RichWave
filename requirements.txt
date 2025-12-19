@@ -3,5 +3,5 @@ gunicorn
 whitenoise
 psycopg2-binary
 Pillow
-cashfree-pg==3.0.2
-  
+requests
+cashfree-pg
