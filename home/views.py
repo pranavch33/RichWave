@@ -201,9 +201,8 @@ def checkout(request, slug):
 
         # 2️⃣ Cashfree config
         Cashfree.XClientId = settings.CASHFREE_APP_ID
-        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = Cashfree.Environment.SANDBOX  
-        # PROD ke liye -> PRODUCTION
+Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+Cashfree.XEnvironment = "SANDBOX"   # 🔥 THIS IS IMPORTANT
 
         # 3️⃣ Create order
         order_request = CreateOrderRequest(
