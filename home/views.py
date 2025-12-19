@@ -178,22 +178,42 @@ from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 
 
-# ==========================
-# CASHFREE CONFIG (GLOBAL)
-# ==========================
+# ================= CASHFREE CONFIG =================
 Cashfree.XClientId = settings.CASHFREE_APP_ID
 Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
 Cashfree.XEnvironment = Cashfree.Environment.SANDBOX
-Cashfree.XApiVersion = "2023-08-01"   # 🔥 MOST IMPORTANT LINE
+Cashfree.XApiVersion = "2023-08-01"
 
 
-# ==========================
-# CHECKOUT VIEW
-# ==========================
+# ================= PACKAGES =================
+PACKAGES = {
+    "basic": {"name": "Thrive Basic Package", "amount": 529},
+    "grow": {"name": "Grow Thrive Package", "amount": 999},
+    "prime": {"name": "Thrive Prime Package", "amount": 1498},
+    "elite": {"name": "Thrive Elite Package", "amount": 2699},
+    "power": {"name": "Thrive Power Package", "amount": 5698},
+    "ultimate": {"name": "Thrive Ultimate Package", "amount": 11699},
+}
+
+
+# ================= CHECKOUT =================
 @csrf_exempt
-def checkout(request):
+def checkout(request, slug):
+    if slug not in PACKAGES:
+        return render(request, "checkout/error.html", {"error": "Invalid package"})
+
+    package = PACKAGES[slug]
+
     if request.method == "GET":
-        return render(request, "checkout/basic.html")
+        return render(
+            request,
+            "checkout/checkout.html",
+            {
+                "package_name": package["name"],
+                "amount": package["amount"],
+                "slug": slug,
+            },
+        )
 
     if request.method == "POST":
         name = request.POST.get("name")
@@ -201,12 +221,11 @@ def checkout(request):
         phone = request.POST.get("phone")
 
         order_id = f"ORDER_{uuid.uuid4().hex[:12]}"
-        amount = 529.00
 
         try:
             order_request = CreateOrderRequest(
                 order_id=order_id,
-                order_amount=amount,
+                order_amount=float(package["amount"]),
                 order_currency="INR",
                 customer_details={
                     "customer_id": order_id,
@@ -216,11 +235,10 @@ def checkout(request):
                 },
                 order_meta={
                     "return_url": "https://www.thriveonindia.com/payment/success/"
-                }
+                },
             )
 
             response = Cashfree().PGCreateOrder(order_request)
-
             payment_session_id = response.data.payment_session_id
 
             return redirect(
@@ -231,11 +249,10 @@ def checkout(request):
             return render(request, "checkout/error.html", {"error": str(e)})
 
 
-# ==========================
-# SUCCESS PAGE
-# ==========================
+# ================= SUCCESS =================
 def payment_success(request):
     return render(request, "checkout/success.html")
+
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
