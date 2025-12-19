@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting to Payment...</title>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+</head>
+<body>
+  <p>Redirecting to secure payment…</p>
+
+  <script>
+    const cashfree = Cashfree({
+      mode: "{{ 'sandbox' if DEBUG else 'production' }}"
+    });
+
+    cashfree.checkout({
+      paymentSessionId: "{{ payment_session_id }}",
+      redirectTarget: "_self"
+    });
+  </script>
+</body>
+</html>
