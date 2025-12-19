@@ -169,12 +169,13 @@ def leaderboard(request):
         "period": period,
     })
 
-from django.shortcuts import render, redirect
-import requests, uuid
+import uuid
+import requests
 from django.conf import settings
+from django.shortcuts import render, redirect
+from django.http import HttpResponseBadRequest
 
 def checkout(request, slug):
-
     package_prices = {
         "basic": 529,
         "grow": 999,
@@ -188,16 +189,15 @@ def checkout(request, slug):
     if not amount:
         return redirect("/")
 
-    # ✅ GET → checkout page dikhao
+    # ✅ GET → checkout page
     if request.method == "GET":
         return render(request, "checkout.html", {
             "amount": amount,
             "slug": slug
         })
 
-    # ✅ POST → Cashfree redirect
+    # ✅ POST → Cashfree
     if request.method == "POST":
-
         order_id = f"order_{uuid.uuid4().hex[:10]}"
 
         headers = {
@@ -209,26 +209,32 @@ def checkout(request, slug):
 
         payload = {
             "order_id": order_id,
-            "order_amount": amount,
+            "order_amount": float(amount),
             "order_currency": "INR",
             "customer_details": {
-                "customer_id": "cust_001",
+                "customer_id": order_id,
                 "customer_email": request.POST.get("email"),
                 "customer_phone": request.POST.get("phone"),
-                "customer_name": request.POST.get("name"),
             },
             "order_meta": {
-                "return_url": "https://thriveonindia.com/payment-success/?order_id={order_id}"
+                "return_url": "https://thriveonindia.com/payment-success/"
             }
         }
 
-        res = requests.post(
-            "https://api.cashfree.com/pg/orders",
-            headers=headers,
-            json=payload
-        ).json()
+        url = (
+            "https://sandbox.cashfree.com/pg/orders"
+            if settings.CASHFREE_ENV == "SANDBOX"
+            else "https://api.cashfree.com/pg/orders"
+        )
 
-        return redirect(res["payment_link"])
+        response = requests.post(url, json=payload, headers=headers)
+        data = response.json()
+
+        if "payment_session_id" not in data:
+            return HttpResponseBadRequest("Cashfree Error")
+
+        payment_link = f"https://payments.cashfree.com/checkout/post/submit?paymentSessionId={data['payment_session_id']}"
+        return redirect(payment_link)
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
