@@ -168,41 +168,52 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-from django.conf import settings
-from django.shortcuts import redirect
-import requests
-import uuid
-
 def checkout(request, slug):
-    order_id = str(uuid.uuid4())
+    package = get_object_or_404(Package, slug=slug)
 
-    url = "https://api.cashfree.com/pg/orders"
+    # ✅ STEP 1: GET = sirf page dikhao
+    if request.method == "GET":
+        return render(request, "checkout.html", {"package": package})
 
-    payload = {
-        "order_id": order_id,
-        "order_amount": 499,
-        "order_currency": "INR",
-        "customer_details": {
-            "customer_id": "cust001",
-            "customer_email": "test@test.com",
-            "customer_phone": "9999999999"
-        },
-        "order_meta": {
-            "return_url": "https://www.thriveonindia.com/payment-success/"
-        }
-    }
+    # ✅ STEP 2: POST = payment create
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
 
-    headers = {
-        "x-client-id": settings.CASHFREE_APP_ID,
-        "x-client-secret": settings.CASHFREE_SECRET_KEY,
-        "x-api-version": "2023-08-01",
-        "Content-Type": "application/json"
-    }
+        pay = PaymentRequest.objects.create(
+            buyer_name=name,
+            buyer_email=email,
+            buyer_phone=phone,
+            package_name=package.name,
+            amount=package.price,
+            status="pending"
+        )
 
-    response = requests.post(url, json=payload, headers=headers)
-    data = response.json()
+        Cashfree.XClientId = settings.CASHFREE_APP_ID
+        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+        Cashfree.XEnvironment = Cashfree.SANDBOX
+        Cashfree.XApiVersion = "2023-08-01"
 
-    return redirect(data["payment_session_id"])
+        order_request = CreateOrderRequest(
+            order_id=f"ORD_{pay.id}",
+            order_amount=float(package.price),
+            order_currency="INR",
+            customer_details={
+                "customer_id": f"CUST_{pay.id}",
+                "customer_name": name,
+                "customer_email": email,
+                "customer_phone": phone,
+            },
+            order_meta={
+                "return_url": "https://thriveonindia.com/payment/success/"
+            }
+        )
+
+        response = Cashfree().PGCreateOrder(order_request)
+
+        # ✅ ONLY HERE payment_session_id exists
+        return redirect(response.data["payment_session_id"])
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
