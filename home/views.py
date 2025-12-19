@@ -168,14 +168,12 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-
-import uuid
-import requests
-from django.conf import settings
+import uuid, requests
 from django.shortcuts import render, redirect
-from django.http import HttpResponseBadRequest
+from django.conf import settings
 
 def checkout(request, slug):
+
     package_prices = {
         "basic": 529,
         "grow": 999,
@@ -189,52 +187,49 @@ def checkout(request, slug):
     if not amount:
         return redirect("/")
 
-    # ✅ GET → checkout page
+    # ---------------- GET ----------------
     if request.method == "GET":
         return render(request, "checkout.html", {
             "amount": amount,
             "slug": slug
         })
 
-    # ✅ POST → Cashfree
-    if request.method == "POST":
-        order_id = f"order_{uuid.uuid4().hex[:10]}"
+    # ---------------- POST ----------------
+    order_id = f"order_{uuid.uuid4().hex[:10]}"
 
-        headers = {
-            "x-client-id": settings.CASHFREE_CLIENT_ID,
-            "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
-            "x-api-version": "2023-08-01",
-            "Content-Type": "application/json",
+    headers = {
+        "x-client-id": settings.CASHFREE_CLIENT_ID,
+        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+        "x-api-version": "2023-08-01",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "order_id": order_id,
+        "order_amount": amount,
+        "order_currency": "INR",
+        "customer_details": {
+            "customer_id": order_id,
+            "customer_email": request.POST.get("email"),
+            "customer_phone": request.POST.get("phone")
+        },
+        "order_meta": {
+            "return_url": "https://thriveonindia.com/"
         }
+    }
 
-        payload = {
-            "order_id": order_id,
-            "order_amount": float(amount),
-            "order_currency": "INR",
-            "customer_details": {
-                "customer_id": order_id,
-                "customer_email": request.POST.get("email"),
-                "customer_phone": request.POST.get("phone"),
-            },
-            "order_meta": {
-                "return_url": "https://thriveonindia.com/payment-success/"
-            }
-        }
+    url = "https://sandbox.cashfree.com/pg/orders"
 
-        url = (
-            "https://sandbox.cashfree.com/pg/orders"
-            if settings.CASHFREE_ENV == "SANDBOX"
-            else "https://api.cashfree.com/pg/orders"
+    response = requests.post(url, json=payload, headers=headers)
+    data = response.json()
+
+    if "payment_session_id" in data:
+        return redirect(
+            f"https://sandbox.cashfree.com/pg/checkout?payment_session_id={data['payment_session_id']}"
         )
 
-        response = requests.post(url, json=payload, headers=headers)
-        data = response.json()
+    return render(request, "error.html", {"error": data})
 
-        if "payment_session_id" not in data:
-            return HttpResponseBadRequest("Cashfree Error")
-
-        payment_link = f"https://payments.cashfree.com/checkout/post/submit?paymentSessionId={data['payment_session_id']}"
-        return redirect(payment_link)
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
