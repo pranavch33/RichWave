@@ -173,7 +173,7 @@ from django.shortcuts import redirect
 import requests
 import uuid
 
-def checkout(request):
+def checkout(request, slug):
     order_id = str(uuid.uuid4())
 
     url = "https://api.cashfree.com/pg/orders"
