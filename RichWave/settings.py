@@ -153,13 +153,5 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
-# ======================
-# CASHFREE CONFIG
-# ======================
-
-CASHFREE_ENV = os.getenv("CASHFREE_ENV", "SANDBOX")
-
 CASHFREE_APP_ID = os.getenv("CASHFREE_APP_ID")
 CASHFREE_SECRET_KEY = os.getenv("CASHFREE_SECRET_KEY")
-
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"
