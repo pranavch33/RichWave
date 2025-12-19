@@ -200,8 +200,7 @@ def checkout(request, slug):
         Cashfree.XClientId = settings.CASHFREE_APP_ID
         Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
         Cashfree.XEnvironment = Cashfree.SANDBOX
-        Cashfree.XApiVersion = "2023-08-01"
-
+        
         order_request = CreateOrderRequest(
     order_id=f"ORD_{uuid.uuid4().hex[:10]}",   # ✅ always >10 chars
     order_amount=float(package.price),
