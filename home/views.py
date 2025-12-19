@@ -218,9 +218,16 @@ def checkout(request, slug):
 
         response = Cashfree().PGCreateOrder(order_request)
 
-        return redirect(response.data.payment_session_id)
+payment_session_id = response.data.payment_session_id
 
-    return render(request, "checkout.html", {"package": package})
+return render(
+    request,
+    "cashfree_redirect.html",
+    {
+        "payment_session_id": payment_session_id,
+        "order_id": order_request.order_id,
+    }
+)
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
