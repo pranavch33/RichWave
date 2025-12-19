@@ -246,12 +246,12 @@ def checkout(request, slug):
             )
 
         except Exception as e:
-            return render(request, "checkout/error.html", {"error": str(e)})
+            return render(request, "error.html", {"error": str(e)})
 
 
 # ================= SUCCESS =================
 def payment_success(request):
-    return render(request, "checkout/success.html")
+    return render(request, "payment_success.html")
 
 # ----------------------------
 # PAYMENT SYSTEM
