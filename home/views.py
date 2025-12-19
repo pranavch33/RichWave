@@ -368,52 +368,43 @@ def manual_id_create(request):
 
         return render(request, "enter_secret.html")
 
-    # STEP 2 — Manual ID create
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        state = request.POST.get("state")
-        sponsor = request.POST.get("sponsor")
-        package = request.POST.get("package")
+  # STEP 2 – Manual ID create
+if request.method == "POST":
+    name = request.POST.get("name")
+    email = request.POST.get("email")
+    phone = request.POST.get("phone")
+    state = request.POST.get("state")
+    sponsor = request.POST.get("sponsor")
+    package = request.POST.get("package")
 
-        # 🔒 Abhi sirf success message (logic baad me)
-        return render(
-            request,
-            "manual_id_form.html",
-            {"success": "Manual ID successfully created!"}
-        )
+    # Same email check
+    if User.objects.filter(username=email).exists():
+        return render(request, "manual_id_form.html", {
+            "error": "Is email se user already bana hua hai."
+        })
 
-    return redirect("manual_id_form")
-       # Basic safety: same email ka user already to nahi
-if User.objects.filter(username=email).exists():
-    error = "Is email se user already bana hua hai."
+    # User create
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password="123456"
+    )
+
+    # Profile create
+    Profile.objects.create(
+        user=user,
+        phone=phone,
+        state=state,
+        sponsor_code=sponsor,
+        package=package
+    )
+
     return render(request, "manual_id_form.html", {
-        "error": error
+        "success": "Manual ID successfully created"
     })
 
-# User create
-user = User.objects.create_user(
-    username=email,
-    email=email,
-    password="123456"
-)
-
-# Profile create (agar Profile model hai)
-Profile.objects.create(
-    user=user,
-    phone=phone,
-    state=state,
-    sponsor_code=sponsor,
-    package=package
-)
-
-return render(request, "manual_id_form.html", {
-    "success": "Manual ID successfully created!"
-})
-    # GET request: form dikhao
-    return render(request, "manual_id_create.html")
-
+# GET request – form dikhao
+return render(request, "manual_id_form.html")
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
