@@ -204,19 +204,19 @@ def checkout(request, slug):
         Cashfree.XEnvironment = Cashfree.SANDBOX
 
         order_request = CreateOrderRequest(
-            order_id=str(pay.id),
-            order_amount=float(package.price),
-            order_currency="INR",
-            customer_details={
-                "customer_id": str(pay.id),
-                "customer_name": name,
-                "customer_email": email,
-                "customer_phone": phone,
-            },
-            order_meta={
-                "return_url": "https://www.thriveonindia.com/payment/success/"
-            }
-        )
+    order_id=f"ORD_{uuid.uuid4().hex[:10]}",   # ✅ always >10 chars
+    order_amount=float(package.price),
+    order_currency="INR",
+    customer_details={
+        "customer_id": f"CUST_{pay.id}",       # ✅ "CUST_1" length >3
+        "customer_name": str(name),
+        "customer_email": str(email),
+        "customer_phone": str(phone).strip(), # ✅ string + 10 digit
+    },
+    order_meta={
+        "return_url": "https://www.thriveonindia.com/payment/success/"
+    }
+)
 
         response = Cashfree().PGCreateOrder(order_request)
 
