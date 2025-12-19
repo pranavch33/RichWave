@@ -170,7 +170,7 @@ def leaderboard(request):
     })
 from django.conf import settings
 from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.pg_create_order_request import PgCreateOrderRequest
+from cashfree_pg.models.create_order_request import CreateOrderRequest
 import uuid
 
 def checkout(request, slug):
@@ -180,6 +180,7 @@ def checkout(request, slug):
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
+        sponsor = request.POST.get("sponsor_code")
 
         pay = PaymentRequest.objects.create(
             buyer_name=name,
@@ -187,16 +188,16 @@ def checkout(request, slug):
             buyer_phone=phone,
             package_name=package.name,
             amount=package.price,
+            sponsor_code=sponsor,
             status="pending"
         )
 
-        # Cashfree config
         Cashfree.XClientId = settings.CASHFREE_APP_ID
         Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = Cashfree.SANDBOX if settings.DEBUG else Cashfree.PRODUCTION
-        # ❌ DO NOT SET XApiVersion
+        Cashfree.XEnvironment = Cashfree.SANDBOX
+        Cashfree.XApiVersion = "2022-09-01"
 
-        order_request = PgCreateOrderRequest(
+        order_request = CreateOrderRequest(
             order_id=f"ORD_{uuid.uuid4().hex[:12]}",
             order_amount=float(package.price),
             order_currency="INR",
@@ -204,7 +205,7 @@ def checkout(request, slug):
                 "customer_id": f"CUST_{pay.id}",
                 "customer_name": name,
                 "customer_email": email,
-                "customer_phone": str(phone),
+                "customer_phone": str(phone)
             },
             order_meta={
                 "return_url": "https://www.thriveonindia.com/payment/success/"
@@ -212,15 +213,7 @@ def checkout(request, slug):
         )
 
         response = Cashfree().PGCreateOrder(order_request)
-
-        return render(
-            request,
-            "cashfree_redirect.html",
-            {
-                "payment_session_id": response.data.payment_session_id,
-                "debug": settings.DEBUG,
-            }
-        )
+        return redirect(response.data.payment_link)
 
     return render(request, "checkout.html", {"package": package})
 # ----------------------------
