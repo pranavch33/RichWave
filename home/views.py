@@ -169,8 +169,8 @@ def leaderboard(request):
         "period": period,
     })
 from django.conf import settings
-from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.create_order_request import CreateOrderRequest
+from cashfree_sdk.api_client import Cashfree
+from cashfree_sdk.models.create_order_request import CreateOrderRequest
 import uuid
 
 def checkout(request, slug):
@@ -192,10 +192,10 @@ def checkout(request, slug):
             status="pending"
         )
 
-        Cashfree.XClientId = settings.CASHFREE_APP_ID
-        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = Cashfree.SANDBOX
-        Cashfree.XApiVersion = "2022-09-01"
+Cashfree.XClientId = settings.CASHFREE_APP_ID
+Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+Cashfree.XEnvironment = Cashfree.SANDBOX
+Cashfree.XApiVersion = "2023-08-01"
 
         order_request = CreateOrderRequest(
             order_id=f"ORD_{uuid.uuid4().hex[:12]}",
