@@ -173,7 +173,7 @@ def leaderboard(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 
-from cashfree_pg.client import Cashfree
+from cashfree_pg import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 
 from .models import Package, PaymentRequest
@@ -198,12 +198,10 @@ def checkout(request, slug):
             status="pending"
         )
 
-        # ✅ Correct Cashfree client (NO configure)
-        client = Cashfree(
-            app_id=settings.CASHFREE_APP_ID,
-            secret_key=settings.CASHFREE_SECRET_KEY,
-            environment=Cashfree.SANDBOX
-        )
+        # ✅ Correct Cashfree init
+        Cashfree.XClientId = settings.CASHFREE_APP_ID
+        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+        Cashfree.XEnvironment = Cashfree.SANDBOX
 
         order_request = CreateOrderRequest(
             order_id=str(pay.id),
@@ -220,7 +218,7 @@ def checkout(request, slug):
             }
         )
 
-        response = client.PGCreateOrder(order_request)
+        response = Cashfree().PGCreateOrder(order_request)
 
         return redirect(response.data.payment_session_id)
 
