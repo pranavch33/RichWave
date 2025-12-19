@@ -1,5 +1,3 @@
-
-
 from django.shortcuts import render, redirect
 from .models import Course, Profile
 from django.contrib.auth.models import User
@@ -170,8 +168,12 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-
 from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
+
+from cashfree_pg.api_client import Cashfree
+from cashfree_pg.models.create_order_request import CreateOrderRequest
+
 from .models import Package, PaymentRequest
 
 
@@ -182,11 +184,8 @@ def checkout(request, slug):
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
-        password = request.POST.get("password")
-        state = request.POST.get("state")
         sponsor = request.POST.get("sponsor_code")
 
-        # Create Payment Request entry in database
         pay = PaymentRequest.objects.create(
             buyer_name=name,
             buyer_email=email,
@@ -194,11 +193,33 @@ def checkout(request, slug):
             package_name=package.name,
             amount=package.price,
             sponsor_code=sponsor,
-            status="pending",
+            status="pending"
         )
 
-       
-        return render(request, "open_upi.html", {"upi_link": upi_link})
+        # ✅ Correct Cashfree init
+        Cashfree.XClientId = settings.CASHFREE_APP_ID
+        Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
+        Cashfree.XEnvironment = Cashfree.SANDBOX
+        Cashfree.XApiVersion = "2023-08-01"
+
+        order_request = CreateOrderRequest(
+    order_id=f"ORD_{uuid.uuid4().hex[:10]}",   # ✅ always >10 chars
+    order_amount=float(package.price),
+    order_currency="INR",
+    customer_details={
+        "customer_id": f"CUST_{pay.id}",       # ✅ "CUST_1" length >3
+        "customer_name": str(name),
+        "customer_email": str(email),
+        "customer_phone": str(phone).strip(), # ✅ string + 10 digit
+    },
+    order_meta={
+        "return_url": "https://www.thriveonindia.com/payment/success/"
+    }
+)
+
+        response = Cashfree().PGCreateOrder(order_request)
+
+        return redirect(response.data.payment_session_id)
 
     return render(request, "checkout.html", {"package": package})
 # ----------------------------
@@ -297,26 +318,13 @@ def reject_payment(request, pay_id):
 
     return redirect("seller_pending_payments")
 
-from django.shortcuts import render, get_object_or_404
-from django.utils import timezone
-
 def payment_status(request, pay_id):
-    pay = get_object_or_404(PaymentRequest, id=pay_id)
+    from .models import PaymentRequest
 
-    # ❌ agar payment create hua hi nahi
-    if not pay:
-        return render(request, "payment_failed.html")
-
-    # ✅ sirf pending wale ko hi auto success
-    if pay.status == "pending":
-        pay.status = "success"
-        pay.verified_at = timezone.now()
-        pay.save()
-
-        # 🔥 yahin tumhara purana logic
-        # 👉 user id create
-        # 👉 affiliate commission
-        # 👉 leaderboard update
+    try:
+        pay = PaymentRequest.objects.get(id=pay_id)
+    except PaymentRequest.DoesNotExist:
+        return render(request, "error.html", {"msg": "Payment Not Found"})
 
     return render(request, "payment_status.html", {"pay": pay})
 
@@ -330,76 +338,90 @@ def payment_failed(request):
 
 
 
-# Manual ID ke liye secret code (yahi tum badaloge)
-MANUAL_ID_SECRET = "THRIVEON-9999"  # apna secret rakho yaha
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .models import Profile
+
+# Manual ID secret
+MANUAL_ID_SECRET = "THRIVEON-9999"
 
 
-@staff_member_required   # sirf admin/staff hi access kar sakta hai
+@staff_member_required
+def manual_id_form(request):
+    """
+    STEP 0:
+    Sirf manual ID form dikhao
+    """
+    return render(request, "manual_id_form.html")
+
+
+@staff_member_required
 def manual_id_create(request):
-    # --------- STEP 1: SECRET CODE CHECK ---------
+    """
+    STEP 1: Secret code verify
+    STEP 2: Manual ID create
+    """
+
+    # ---------- STEP 1 : SECRET VERIFY ----------
     if not request.session.get("manual_id_verified"):
+
         if request.method == "POST" and "secret_code" in request.POST:
             entered = request.POST.get("secret_code")
+
             if entered == MANUAL_ID_SECRET:
                 request.session["manual_id_verified"] = True
-                return redirect("manual_id_create")
+                return redirect("manual_id_form")
             else:
-                return render(request, "enter_secret.html", {
-                    "error": "Galat secret code hai."
-                })
-        # GET request ya abhi tak code nahi dala
+                return render(
+                    request,
+                    "enter_secret.html",
+                    {"error": "Galat secret code hai"}
+                )
+
         return render(request, "enter_secret.html")
 
-    # --------- STEP 2: ACTUAL ID CREATION FORM ---------
-    if request.method == "POST" and "secret_code" not in request.POST:
+    # ---------- STEP 2 : MANUAL ID CREATE ----------
+    if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         state = request.POST.get("state")
-        sponsor = request.POST.get("sponsor_code")
-        package_name = request.POST.get("package_name")
+        sponsor = request.POST.get("sponsor")
+        package = request.POST.get("package")
 
-        error = None
-        success = None
-
-        # Basic safety: same email ka user already to nahi?
+        # Same email check
         if User.objects.filter(username=email).exists():
-            error = "Is email se user already bana hua hai."
-        else:
-            try:
-                user = User.objects.create_user(
-                    username=email,
-                    email=email,
-                    password="123456"
-                )
+            return render(
+                request,
+                "manual_id_form.html",
+                {"error": "Is email se user already bana hua hai."}
+            )
 
-                # ⚠️ Yaha Profile ke field naam tumhare model ke hisaab se honge
-                profile = Profile.objects.create(
-                    user=user,
-                    phone=phone,
-                    state=state,
-                    referral_code=sponsor or "",
-                    purchased_package=package_name,
-                    wallet_balance=0,
-                )
+        # User create
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password="123456"
+        )
 
-                # 👉 Yahi jagah hai jaha tum baad me
-                # commission / leaderboard ka same logic jod sakte ho
-                # jo payment success me use karte ho
+        # Profile create
+        Profile.objects.create(
+            user=user,
+            phone=phone,
+            state=state,
+            sponsor_code=sponsor,
+            package=package
+        )
 
-                success = f"ID ban gayi ✅  Username: {email}  Password: 123456"
-            except Exception as e:
-                error = f"Kuch galat ho gaya: {e}"
+        return render(
+            request,
+            "manual_id_form.html",
+            {"success": "Manual ID successfully created"}
+        )
 
-        return render(request, "manual_id_create.html", {
-            "error": error,
-            "success": success,
-        })
-
-    # GET request: form dikhao
-    return render(request, "manual_id_create.html")
-
-
+    # GET request
+    return render(request, "manual_id_form.html")
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -649,79 +671,34 @@ def referrals_list(request):
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
 from .models import WithdrawalRequest
-
 
 @login_required
 def withdrawal_request_list(request):
-    # Wallet balance (safe)
-    wallet_balance = request.user.wallet_balance if hasattr(request.user, "wallet_balance") else 0
+    # User ka balance yaha se aayega
+    wallet_balance = request.user.wallet_balance if hasattr(request.user, 'wallet_balance') else 0
 
-    # ======================
-    # POST → Withdrawal submit
-    # ======================
+    # POST = Form submitted
     if request.method == "POST":
-        amount = int(request.POST.get("amount", 0))
+        amount = int(request.POST.get("amount"))
 
         # Balance check
-        if amount <= 0:
-            messages.error(request, "Invalid amount")
-        elif amount > wallet_balance:
-            messages.error(request, "Insufficient Balance")
+        if amount > wallet_balance:
+            messages.error(request, "Insufficient Balance!")
         else:
-            # Create withdrawal request
             WithdrawalRequest.objects.create(
                 user=request.user,
                 amount=amount,
-                status="pending"
+                status="pending",
             )
+            messages.success(request, "Withdrawal Request Submitted Successfully!")
 
-            # OPTIONAL (agar abhi balance deduct nahi karna)
-            # request.user.wallet_balance -= amount
-            # request.user.save()
+        return redirect("withdrawal_request")
 
-            messages.success(request, "Withdrawal request submitted successfully")
+    # Withdrawal list
+    qs = WithdrawalRequest.objects.filter(user=request.user).order_by("-created_at")
 
-        # 🔥 SAME PAGE PE RETURN (NO 2nd PAGE)
-        return redirect(request.META.get("HTTP_REFERER", "/"))
-
-    # ======================
-    # GET → Page load
-    # ======================
-    qs = WithdrawalRequest.objects.filter(
-        user=request.user
-    ).order_by("-created_at")
-
-    return render(
-        request,
-        "home/withdrawal_request.html",
-        {
-            "requests_list": qs,
-            "wallet_balance": wallet_balance,
-        }
-    )
-
-
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-import json
-
-@csrf_exempt
-def cashfree_webhook(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Invalid request method"}, status=400)
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-    except Exception as e:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    payment_status = data.get("payment_status")
-    order_id = data.get("order_id")
-
-    if payment_status == "SUCCESS":
-        # 🔥 YAHI TERA PURANA AUTO-ID + COMMISSION LOGIC CALL HOGA
-        print("✅ Payment Success:", order_id)
-
-    return JsonResponse({"status": "ok"})
+    return render(request, "home/withdrawal_request.html", {
+        "requests_list": qs,
+        "wallet_balance": wallet_balance,
+    })
