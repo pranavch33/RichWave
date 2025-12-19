@@ -169,34 +169,42 @@ def leaderboard(request):
         "period": period,
     })
 
-from django.shortcuts import redirect
-import requests
-import uuid
+from django.shortcuts import render, redirect
+import requests, uuid
 from django.conf import settings
 
 def checkout(request, slug):
+
+    package_prices = {
+        "basic": 529,
+        "grow": 999,
+        "prime": 1498,
+        "elite": 2699,
+        "power": 5698,
+        "ultimate": 11699,
+    }
+
+    amount = package_prices.get(slug)
+    if not amount:
+        return redirect("/")
+
+    # ✅ GET → checkout page dikhao
+    if request.method == "GET":
+        return render(request, "checkout.html", {
+            "amount": amount,
+            "slug": slug
+        })
+
+    # ✅ POST → Cashfree redirect
     if request.method == "POST":
 
-        package_prices = {
-            "basic": 529,
-            "grow": 999,
-            "prime": 1498,
-            "elite": 2699,
-            "power": 5698,
-            "ultimate": 11699,
-        }
-
-        amount = package_prices.get(slug)
-        if not amount:
-            return redirect("/")
-
-        order_id = f"order_{uuid.uuid4().hex[:12]}"
+        order_id = f"order_{uuid.uuid4().hex[:10]}"
 
         headers = {
             "x-client-id": settings.CASHFREE_CLIENT_ID,
             "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
             "x-api-version": "2023-08-01",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         payload = {
@@ -221,11 +229,6 @@ def checkout(request, slug):
         ).json()
 
         return redirect(res["payment_link"])
-
-# ================= SUCCESS =================
-def payment_success(request):
-    return render(request, "payment_success.html")
-
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
