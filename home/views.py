@@ -168,14 +168,10 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
-
 from cashfree_pg.api_client import Cashfree
 from cashfree_pg.models.create_order_request import CreateOrderRequest
-
-from .models import Package, PaymentRequest
-
+import uuid
 
 def checkout(request, slug):
     package = get_object_or_404(Package, slug=slug)
@@ -196,38 +192,41 @@ def checkout(request, slug):
             status="pending"
         )
 
-        # ✅ Correct Cashfree init
+        # ✅ Cashfree config
         Cashfree.XClientId = settings.CASHFREE_APP_ID
         Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = Cashfree.SANDBOX
-        
+        Cashfree.XEnvironment = (
+            Cashfree.SANDBOX if settings.DEBUG else Cashfree.PRODUCTION
+        )
+        Cashfree.XApiVersion = "2023-08-01"
+
         order_request = CreateOrderRequest(
-    order_id=f"ORD_{uuid.uuid4().hex[:10]}",   # ✅ always >10 chars
-    order_amount=float(package.price),
-    order_currency="INR",
-    customer_details={
-        "customer_id": f"CUST_{pay.id}",       # ✅ "CUST_1" length >3
-        "customer_name": str(name),
-        "customer_email": str(email),
-        "customer_phone": str(phone).strip(), # ✅ string + 10 digit
-    },
-    order_meta={
-        "return_url": "https://www.thriveonindia.com/payment/success/"
-    }
-)
+            order_id=f"ORD_{uuid.uuid4().hex[:12]}",
+            order_amount=float(package.price),
+            order_currency="INR",
+            customer_details={
+                "customer_id": f"CUST_{pay.id}",
+                "customer_name": name,
+                "customer_email": email,
+                "customer_phone": str(phone),
+            },
+            order_meta={
+                "return_url": "https://www.thriveonindia.com/payment/success/"
+            }
+        )
 
         response = Cashfree().PGCreateOrder(order_request)
 
-payment_session_id = response.data.payment_session_id
+        return render(
+            request,
+            "cashfree_redirect.html",
+            {
+                "payment_session_id": response.data.payment_session_id,
+                "debug": settings.DEBUG,
+            }
+        )
 
-return render(
-    request,
-    "cashfree_redirect.html",
-    {
-        "payment_session_id": payment_session_id,
-        "order_id": order_request.order_id,
-    }
-)
+    return render(request, "checkout.html", {"package": package})
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
