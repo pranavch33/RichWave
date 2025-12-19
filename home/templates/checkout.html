@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Checkout - ThriveOn</title>
 
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -27,7 +26,6 @@
         box-shadow: 0 10px 35px rgba(0,0,0,0.1);
     }
 
-    /* LEFT PACKAGE BOX */
     .package {
         width: 35%;
         padding: 25px;
@@ -49,12 +47,6 @@
         margin-bottom: 18px;
     }
 
-    .features li {
-        margin-bottom: 8px;
-        font-size: 14px;
-    }
-
-    /* RIGHT CHECKOUT FORM */
     .form-box {
         width: 65%;
     }
@@ -73,13 +65,6 @@
         border: 1px solid #ccc;
         margin-bottom: 15px;
         font-size: 15px;
-        transition: 0.3s;
-        outline: none;
-    }
-
-    input:focus, select:focus {
-        border-color: #0066ff;
-        box-shadow: 0 0 6px rgba(0,102,255,0.3);
     }
 
     button {
@@ -92,50 +77,23 @@
         background: linear-gradient(135deg, #007bff, #005ce6);
         color: #fff;
         cursor: pointer;
-        transition: 0.3s;
-        letter-spacing: 1px;
-    }
-
-    button:hover {
-        background: linear-gradient(135deg, #005ce6, #0047b3);
-        transform: translateY(-2px);
-    }
-
-    @media(max-width: 820px){
-        .center-box {
-            flex-direction: column;
-            padding: 20px;
-        }
-        .package, .form-box {
-            width: 100%;
-        }
     }
 </style>
-
 </head>
+
 <body>
 
 <div class="center-box">
 
-    <!-- LEFT PACKAGE SECTION -->
     <div class="package">
         <div class="package-title">{{ package.name }}</div>
         <div class="price">₹{{ package.price }}</div>
-
-        <ul class="features">
-            <li>✔ Lifetime Access</li>
-            <li>✔ Instant ID Creation</li>
-            <li>✔ Affiliate Dashboard</li>
-            <li>✔ Real Time Leaderboard</li>
-            <li>✔ Earn 70% Commission</li>
-        </ul>
     </div>
 
-    <!-- RIGHT FORM -->
     <div class="form-box">
-        <h2 style="margin-bottom: 20px;">Billing Details</h2>
+        <h2>Billing Details</h2>
 
-        <form method="POST">
+        <form method="POST" action="/checkout/prime/">
             {% csrf_token %}
 
             <label>Name</label>
@@ -145,7 +103,14 @@
             <input type="email" name="email" required>
 
             <label>Phone</label>
-            <input type="text" name="phone" required>
+            <input
+              type="text"
+              name="phone"
+              required
+              minlength="10"
+              maxlength="10"
+              pattern="[0-9]{10}"
+              placeholder="10 digit mobile number">
 
             <label>Password</label>
             <input type="password" name="password" required>
@@ -158,21 +123,13 @@
                 <option>Madhya Pradesh</option>
                 <option>Rajasthan</option>
                 <option>Uttar Pradesh</option>
-                <option>Karnataka</option>
-                <option>Delhi</option>
-                <option>Tamil Nadu</option>
-                <option>West Bengal</option>
-                <option>Bihar</option>
-                <option>Punjab</option>
-                <option>Haryana</option>
             </select>
 
             <label>Sponsor Code</label>
             <input type="text" name="sponsor_code">
 
-            <button type="submit" class="pay-btn">Pay ₹{{ package.price }}</button>
+            <button type="submit">Pay ₹{{ package.price }}</button>
         </form>
-
     </div>
 
 </div>
