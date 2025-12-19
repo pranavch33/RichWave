@@ -330,8 +330,10 @@ def payment_failed(request):
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .models import Profile
 
-# Manual ID ke liye secret code
+# Manual ID secret
 MANUAL_ID_SECRET = "THRIVEON-9999"
 
 
@@ -339,7 +341,7 @@ MANUAL_ID_SECRET = "THRIVEON-9999"
 def manual_id_form(request):
     """
     STEP 0:
-    Admin ko pehle manual ID form dikhao
+    Sirf manual ID form dikhao
     """
     return render(request, "manual_id_form.html")
 
@@ -348,11 +350,12 @@ def manual_id_form(request):
 def manual_id_create(request):
     """
     STEP 1: Secret code verify
-    STEP 2: Actual manual ID creation
+    STEP 2: Manual ID create
     """
 
-    # STEP 1 — Secret verify
+    # ---------- STEP 1 : SECRET VERIFY ----------
     if not request.session.get("manual_id_verified"):
+
         if request.method == "POST" and "secret_code" in request.POST:
             entered = request.POST.get("secret_code")
 
@@ -368,44 +371,47 @@ def manual_id_create(request):
 
         return render(request, "enter_secret.html")
 
-  # STEP 2 – Manual ID create
-if request.method == "POST":
-    name = request.POST.get("name")
-    email = request.POST.get("email")
-    phone = request.POST.get("phone")
-    state = request.POST.get("state")
-    sponsor = request.POST.get("sponsor")
-    package = request.POST.get("package")
+    # ---------- STEP 2 : MANUAL ID CREATE ----------
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        state = request.POST.get("state")
+        sponsor = request.POST.get("sponsor")
+        package = request.POST.get("package")
 
-    # Same email check
-    if User.objects.filter(username=email).exists():
-        return render(request, "manual_id_form.html", {
-            "error": "Is email se user already bana hua hai."
-        })
+        # Same email check
+        if User.objects.filter(username=email).exists():
+            return render(
+                request,
+                "manual_id_form.html",
+                {"error": "Is email se user already bana hua hai."}
+            )
 
-    # User create
-    user = User.objects.create_user(
-        username=email,
-        email=email,
-        password="123456"
-    )
+        # User create
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password="123456"
+        )
 
-    # Profile create
-    Profile.objects.create(
-        user=user,
-        phone=phone,
-        state=state,
-        sponsor_code=sponsor,
-        package=package
-    )
+        # Profile create
+        Profile.objects.create(
+            user=user,
+            phone=phone,
+            state=state,
+            sponsor_code=sponsor,
+            package=package
+        )
 
-    return render(request, "manual_id_form.html", {
-        "success": "Manual ID successfully created"
-    })
+        return render(
+            request,
+            "manual_id_form.html",
+            {"success": "Manual ID successfully created"}
+        )
 
-# GET request – form dikhao
-return render(request, "manual_id_form.html")
-
+    # GET request
+    return render(request, "manual_id_form.html")
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
