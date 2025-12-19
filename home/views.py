@@ -170,7 +170,7 @@ def leaderboard(request):
     })
 from django.conf import settings
 from cashfree_pg.api_client import Cashfree
-from cashfree_pg.models.create_order_request import CreateOrderRequest
+from cashfree_pg.models.pg_create_order_request import PgCreateOrderRequest
 import uuid
 
 def checkout(request, slug):
@@ -180,7 +180,6 @@ def checkout(request, slug):
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
-        sponsor = request.POST.get("sponsor_code")
 
         pay = PaymentRequest.objects.create(
             buyer_name=name,
@@ -188,19 +187,16 @@ def checkout(request, slug):
             buyer_phone=phone,
             package_name=package.name,
             amount=package.price,
-            sponsor_code=sponsor,
             status="pending"
         )
 
-        # ✅ Cashfree config
+        # Cashfree config
         Cashfree.XClientId = settings.CASHFREE_APP_ID
         Cashfree.XClientSecret = settings.CASHFREE_SECRET_KEY
-        Cashfree.XEnvironment = (
-            Cashfree.SANDBOX if settings.DEBUG else Cashfree.PRODUCTION
-        )
-        Cashfree.XApiVersion = "2023-08-01"
+        Cashfree.XEnvironment = Cashfree.SANDBOX if settings.DEBUG else Cashfree.PRODUCTION
+        # ❌ DO NOT SET XApiVersion
 
-        order_request = CreateOrderRequest(
+        order_request = PgCreateOrderRequest(
             order_id=f"ORD_{uuid.uuid4().hex[:12]}",
             order_amount=float(package.price),
             order_currency="INR",
