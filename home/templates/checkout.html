@@ -135,7 +135,7 @@
     <div class="form-box">
         <h2 style="margin-bottom: 20px;">Billing Details</h2>
 
-       <form action="{% url 'checkout' slug %}" method="post">
+       <form action="{% url 'home:checkout' slug %}" method="post">
             {% csrf_token %}
 
             <label>Name</label>
