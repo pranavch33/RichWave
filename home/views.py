@@ -188,10 +188,15 @@ def checkout(request, slug):
         return redirect("/")
 
     if request.method == "GET":
-        return render(request, "checkout.html", {
-            "amount": amount,
-            "package_name": slug.capitalize()
-        })
+        return render(
+            request,
+            "checkout.html",
+            {
+                "amount": amount,
+                "package_name": slug.capitalize(),
+                "slug": slug,
+            },
+        )
 
     # -------- POST ----------
     order_id = f"order_{uuid.uuid4().hex[:10]}"
