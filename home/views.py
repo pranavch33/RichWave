@@ -173,7 +173,6 @@ from django.conf import settings
 import uuid, requests
 
 def checkout(request, slug):
-
     package_prices = {
         "basic": 529,
         "grow": 999,
@@ -185,13 +184,13 @@ def checkout(request, slug):
 
     amount = package_prices.get(slug)
 
-    if not amount:
+    if amount is None:
         return redirect("/")
 
     if request.method == "GET":
         return render(request, "checkout.html", {
             "amount": amount,
-            "slug": slug
+            "package_name": slug.capitalize()
         })
 
     # -------- POST ----------
