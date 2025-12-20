@@ -168,9 +168,9 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-import uuid, requests
 from django.shortcuts import render, redirect
 from django.conf import settings
+import uuid, requests
 
 def checkout(request, slug):
 
@@ -187,14 +187,13 @@ def checkout(request, slug):
     if not amount:
         return redirect("/")
 
-    # ---------------- GET ----------------
     if request.method == "GET":
         return render(request, "checkout.html", {
             "amount": amount,
             "slug": slug
         })
 
-    # ---------------- POST ----------------
+    # ---------- POST ----------
     order_id = f"order_{uuid.uuid4().hex[:10]}"
 
     headers = {
@@ -209,27 +208,27 @@ def checkout(request, slug):
         "order_amount": amount,
         "order_currency": "INR",
         "customer_details": {
-            "customer_id": order_id,
+            "customer_id": "cust_001",
             "customer_email": request.POST.get("email"),
             "customer_phone": request.POST.get("phone")
         },
         "order_meta": {
-            "return_url": "https://thriveonindia.com/"
+            "return_url": "https://thriveonindia.com/payment/success/?order_id={order_id}"
         }
     }
 
     url = "https://sandbox.cashfree.com/pg/orders"
 
-    response = requests.post(url, json=payload, headers=headers)
-    data = response.json()
+    res = requests.post(url, json=payload, headers=headers)
+    data = res.json()
 
-    if "payment_session_id" in data:
-        return redirect(
-            f"https://sandbox.cashfree.com/pg/checkout?payment_session_id={data['payment_session_id']}"
-        )
+    if "payment_session_id" not in data:
+        print(data)
+        return redirect("/payment-failed/")
 
-    return render(request, "error.html", {"error": data})
-
+    return redirect(
+        f"https://sandbox.cashfree.com/pg/view/payment-session?payment_session_id={data['payment_session_id']}"
+    )
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
