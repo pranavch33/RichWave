@@ -184,6 +184,7 @@ def checkout(request, slug):
     }
 
     amount = package_prices.get(slug)
+
     if not amount:
         return redirect("/")
 
@@ -193,7 +194,7 @@ def checkout(request, slug):
             "slug": slug
         })
 
-    # ---------- POST ----------
+    # -------- POST ----------
     order_id = f"order_{uuid.uuid4().hex[:10]}"
 
     headers = {
@@ -208,12 +209,12 @@ def checkout(request, slug):
         "order_amount": amount,
         "order_currency": "INR",
         "customer_details": {
-            "customer_id": "cust_001",
+            "customer_id": order_id,
             "customer_email": request.POST.get("email"),
             "customer_phone": request.POST.get("phone")
         },
         "order_meta": {
-            "return_url": "https://thriveonindia.com/payment/success/?order_id={order_id}"
+            "return_url": "https://thriveonindia.com/payment/status/{order_id}"
         }
     }
 
@@ -224,7 +225,7 @@ def checkout(request, slug):
 
     if "payment_session_id" not in data:
         print(data)
-        return redirect("/payment-failed/")
+        return redirect("/payment/failed/")
 
     return redirect(
         f"https://sandbox.cashfree.com/pg/view/payment-session?payment_session_id={data['payment_session_id']}"
