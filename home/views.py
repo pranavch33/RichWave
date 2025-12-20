@@ -237,24 +237,45 @@ def checkout(request, slug):
 from django.shortcuts import redirect, render
 
 def payment_checkout(request, package_name):
-    try:
-        package = Package.objects.get(name=package_name)
-    except:
-        return render(request, "error.html", {"msg": "Package not found"})
+    amount = int(request.POST.get("amount"))
 
-    pay = PaymentRequest.objects.create(
-        buyer_name=request.POST.get("name"),
-        buyer_email=request.POST.get("email"),
-        buyer_phone=request.POST.get("phone"),
-        package_name=package.name,
-        amount=package.price,
-        referral_code_used=request.POST.get("sponsor_code"),
-        status="pending",
-        created_at=timezone.now()
+    if not amount:
+        return redirect("/payment/failed/")
+
+    order_id = f"order_{uuid.uuid4().hex[:10]}"
+
+    headers = {
+        "x-client-id": settings.CASHFREE_CLIENT_ID,
+        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+        "x-api-version": "2023-08-01",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "order_id": order_id,
+        "order_amount": amount,
+        "order_currency": "INR",
+        "customer_details": {
+            "customer_id": order_id,
+            "customer_email": request.POST.get("email"),
+            "customer_phone": request.POST.get("phone")
+        },
+        "order_meta": {
+            "return_url": "https://thriveonindia.com/payment/success/"
+        }
+    }
+
+    url = "https://api.cashfree.com/pg/orders"
+    res = requests.post(url, json=payload, headers=headers)
+    data = res.json()
+
+    if "payment_session_id" not in data:
+        print(data)
+        return redirect("/payment/failed/")
+
+    return redirect(
+        f"https://sandbox.cashfree.com/pg/view/payment_session_id={data['payment_session_id']}"
     )
-
-    return redirect(f"/payment-waiting/{pay.id}/")
-
 
 def payment_waiting(request, payment_id):
     try:
