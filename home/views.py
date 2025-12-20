@@ -168,73 +168,15 @@ def leaderboard(request):
         "entries": entries,
         "period": period,
     })
-from django.shortcuts import render, redirect
-from django.conf import settings
-import uuid, requests
+from django.shortcuts import render, get_object_or_404
+from .models import Package   # agar model ka naam Package hai
 
 def checkout(request, slug):
-    package_prices = {
-        "basic": 529,
-        "grow": 999,
-        "prime": 1498,
-        "elite": 2699,
-        "power": 5698,
-        "ultimate": 11699,
-    }
+    package = get_object_or_404(Package, slug=slug)
 
-    amount = package_prices.get(slug)
-
-    if amount is None:
-        return redirect("/")
-
-    if request.method == "GET":
-        return render(
-            request,
-            "checkout.html",
-            {
-                "amount": amount,
-                "package_name": slug.capitalize(),
-                "slug": slug,
-            },
-        )
-
-    # -------- POST ----------
-    order_id = f"order_{uuid.uuid4().hex[:10]}"
-
-    headers = {
-        "x-client-id": settings.CASHFREE_CLIENT_ID,
-        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
-        "x-api-version": "2023-08-01",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "order_id": order_id,
-        "order_amount": amount,
-        "order_currency": "INR",
-        "customer_details": {
-            "customer_id": order_id,
-            "customer_email": request.POST.get("email"),
-            "customer_phone": request.POST.get("phone")
-        },
-        "order_meta": {
-            "return_url": "https://thriveonindia.com/payment/status/{order_id}"
-        }
-    }
-
-    url = "https://sandbox.cashfree.com/pg/orders"
-
-    res = requests.post(url, json=payload, headers=headers)
-    data = res.json()
-
-    if "payment_session_id" not in data:
-        print(data)
-        return redirect("/payment/failed/")
-
-    return redirect(
-        f"https://sandbox.cashfree.com/pg/view/payment-session?payment_session_id={data['payment_session_id']}"
-    )
-
+    return render(request, "checkout.html", {
+        "package": package
+    })
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
