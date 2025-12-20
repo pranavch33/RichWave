@@ -195,41 +195,41 @@ def checkout(request, slug):
         })
 
     # -------- POST ----------
-    order_id = f"order_{uuid.uuid4().hex[:10]}"
+   url = "https://api.cashfree.com/pg/orders"
 
-    headers = {
-        "x-client-id": settings.CASHFREE_CLIENT_ID,
-        "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
-        "x-api-version": "2023-08-01",
-        "Content-Type": "application/json"
+headers = {
+    "x-client-id": settings.CASHFREE_CLIENT_ID,
+    "x-client-secret": settings.CASHFREE_CLIENT_SECRET,
+    "x-api-version": "2023-08-01",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "order_id": order_id,
+    "order_amount": amount,
+    "order_currency": "INR",
+    "customer_details": {
+        "customer_id": order_id,
+        "customer_email": request.POST.get("email"),
+        "customer_phone": request.POST.get("phone")
+    },
+    "order_meta": {
+        "return_url": f"https://thriveonindia.com/payment-status/{order_id}/"
     }
+}
 
-    payload = {
-        "order_id": order_id,
-        "order_amount": amount,
-        "order_currency": "INR",
-        "customer_details": {
-            "customer_id": order_id,
-            "customer_email": request.POST.get("email"),
-            "customer_phone": request.POST.get("phone")
-        },
-        "order_meta": {
-            "return_url": "https://thriveonindia.com/payment/status/{order_id}"
-        }
-    }
+res = requests.post(url, json=payload, headers=headers)
+data = res.json()
 
-    url = "https://sandbox.cashfree.com/pg/orders"
+if "payment_session_id" not in data:
+    print(data)
+    return redirect("payment_failed")
 
-    res = requests.post(url, json=payload, headers=headers)
-    data = res.json()
+payment_session_id = data["payment_session_id"]
 
-    if "payment_session_id" not in data:
-        print(data)
-        return redirect("/payment/failed/")
-
-    return redirect(
-        f"https://sandbox.cashfree.com/pg/view/payment-session?payment_session_id={data['payment_session_id']}"
-    )
+return redirect(
+    f"https://payments.cashfree.com/pg/pay?session_id={payment_session_id}"
+)
 # ----------------------------
 # PAYMENT SYSTEM
 # ----------------------------
