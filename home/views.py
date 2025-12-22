@@ -328,7 +328,7 @@ from .models import Package   # 👈 agar file ke upar already nahi hai to
 @staff_member_required
 def manual_id_form(request):
     packages = Package.objects.all()
-    return render(request, "manual_id_form.html", {
+    return render(request, "home:manual_id_form.html", {
         "packages": packages
     })
 
