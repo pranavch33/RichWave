@@ -323,13 +323,14 @@ from .models import Profile
 MANUAL_ID_SECRET = "THRIVEON-9999"
 
 
+from .models import Package   # 👈 agar file ke upar already nahi hai to
+
 @staff_member_required
 def manual_id_form(request):
-    """
-    STEP 0:
-    Sirf manual ID form dikhao
-    """
-    return render(request, "manual_id_form.html")
+    packages = Package.objects.all()
+    return render(request, "manual_id_form.html", {
+        "packages": packages
+    })
 
 
 @staff_member_required
