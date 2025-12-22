@@ -4,7 +4,7 @@
     <p style="color: green; font-weight: bold;">{{ success }}</p>
 {% endif %}
 
-<form method="POST" action="{% url 'manual_id_create' %}">
+<form method="POST" action="{% url 'home:manual_id_create' %}">
     {% csrf_token %}
 
     <label>Name</label>
