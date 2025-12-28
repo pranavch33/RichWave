@@ -324,7 +324,7 @@ MANUAL_ID_SECRET = "THRIVEON-9999"
 @staff_member_required
 def manual_id_form(request):
     packages = Package.objects.all()
-    return render(request, "admin_secret.html", {
+    return render(request, "home/admin_secret.html", {
         "packages": packages
     })
 
@@ -341,11 +341,11 @@ def manual_id_create(request):
                 request.session["manual_id_verified"] = True
                 return redirect("manual_id_form")
             else:
-                return render(request, "admin_secret.html", {
+                return render(request, "home/admin_secret.html", {
                     "error": "Galat secret code hai"
                 })
 
-        return render(request, "admin_secret.html")
+        return render(request, "home/admin_secret.html")
 
     # STEP 2 – CREATE USER
     if request.method == "POST":
