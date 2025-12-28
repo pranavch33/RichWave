@@ -365,7 +365,7 @@ def manual_id_create(request):
                 )
 
         else:
-            return render(request, "admin_secret.html")
+            return render(request, "home:admin_secret.html")
 
     # ---------------------------
     # STEP 2: CREATE MANUAL ID
