@@ -313,59 +313,52 @@ def payment_failed(request):
     return render(request, "payment_failed.html")
 
 
-from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import Profile
+from django.contrib.auth.models import User
+from .models import Profile, Package
 
 MANUAL_ID_SECRET = "THRIVEON-9999"
 
 
 @staff_member_required
+def manual_id_form(request):
+    packages = Package.objects.all()
+    return render(request, "admin_secret.html", {
+        "packages": packages
+    })
+
+
+@staff_member_required
 def manual_id_create(request):
 
-    # =========================
-    # STEP 1: SECRET VERIFY
-    # =========================
+    # STEP 1 – SECRET VERIFY
     if not request.session.get("manual_id_verified"):
-
-        if request.method == "POST" and "secret_code" in request.POST:
+        if request.method == "POST":
             entered = request.POST.get("secret_code")
 
             if entered == MANUAL_ID_SECRET:
                 request.session["manual_id_verified"] = True
-                return redirect("home:manual_id_create")
+                return redirect("manual_id_form")
             else:
-                return render(
-                    request,
-                    "admin_secret.html",
-                    {"error": "Galat secret code hai"}
-                )
+                return render(request, "admin_secret.html", {
+                    "error": "Galat secret code hai"
+                })
 
         return render(request, "admin_secret.html")
 
-
-    # =========================
-    # STEP 2: CREATE MANUAL ID
-    # =========================
+    # STEP 2 – CREATE USER
     if request.method == "POST":
-
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
         state = request.POST.get("state")
         sponsor_code = request.POST.get("sponsor_code")
         package_name = request.POST.get("package_name")
-        password = request.POST.get("password")   # 🔐 IMPORTANT
 
-        if User.objects.filter(username=email).exists():
-            return render(
-                request,
-                "manual_id_form.html",
-                {"error": "User already exists"}
-            )
+        # 🔐 password auto-generate
+        password = User.objects.make_random_password()
 
-        # 🔐 Create User
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -374,7 +367,6 @@ def manual_id_create(request):
         user.first_name = name
         user.save()
 
-        # 👤 Profile
         Profile.objects.create(
             user=user,
             phone=phone,
@@ -383,16 +375,15 @@ def manual_id_create(request):
             package_name=package_name
         )
 
-        # clear session
-        del request.session["manual_id_verified"]
+        # session clear
+        request.session.pop("manual_id_verified", None)
 
-        return render(
-            request,
-            "manual_id_form.html",
-            {"success": "Manual ID successfully created"}
-        )
+        return render(request, "success.html", {
+            "email": email,
+            "password": password
+        })
 
-    return render(request, "manual_id_form.html")
+    return redirect("manual_id_form")
     # ---------- STEP 1 : SECRET VERIFY ----------
     if not request.session.get("manual_id_verified"):
 
